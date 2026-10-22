@@ -1,0 +1,560 @@
+{
+  "schema_version": 1,
+  "project": "hardware_store_platform",
+  "implementation_authorization": "none; planning/setup only so far",
+  "coordination": {
+    "max_concurrent_implementation_workers": 2,
+    "ledger_writer": "main Claude session",
+    "states": [
+      "pending",
+      "in_progress",
+      "blocked",
+      "in_review",
+      "done"
+    ],
+    "readiness": "A pending task is eligible only when dependencies are done, its phase is authorized and required decisions are resolved."
+  },
+  "tasks": [
+    {
+      "id": "P0-01",
+      "phase": 0,
+      "title": "Inspect target repository and reconcile requirements",
+      "owner": "platform-architect",
+      "depends_on": [],
+      "suggested_write_scope": [
+        "docs/planning/PROMPT_REVIEW.md",
+        "docs/architecture/ARCHITECTURE.md"
+      ],
+      "acceptance": [
+        "Classify actual local implementation; preserve existing work",
+        "Map every source requirement to implemented, missing, deferred or excluded status"
+      ],
+      "status": "pending",
+      "active_owner": null,
+      "evidence": [],
+      "blockers": []
+    },
+    {
+      "id": "P0-02",
+      "phase": 0,
+      "title": "Freeze boundaries and phase contracts",
+      "owner": "platform-architect",
+      "depends_on": [
+        "P0-01"
+      ],
+      "suggested_write_scope": [
+        "docs/architecture/DOMAIN_CONTRACTS.md",
+        "docs/planning/DECISIONS.md"
+      ],
+      "acceptance": [
+        "Record technical defaults and unresolved business-source decisions",
+        "Freeze role matrix, lifecycles, authority and contract version for P1"
+      ],
+      "status": "pending",
+      "active_owner": null,
+      "evidence": [],
+      "blockers": []
+    },
+    {
+      "id": "P1-01",
+      "phase": 1,
+      "title": "Create pinned local runtime and check commands",
+      "owner": "runtime-engineer",
+      "depends_on": [
+        "P0-02"
+      ],
+      "suggested_write_scope": [
+        "compose.yaml",
+        "infra/local/",
+        "apps/api/config/",
+        "apps/api/pyproject.toml",
+        "apps/api/uv.lock",
+        "apps/web/package.json",
+        "apps/web/package-lock.json"
+      ],
+      "acceptance": [
+        "Compatible exact versions and lockfiles recorded",
+        "Web, API and Postgres start locally; health checks pass",
+        "Record actual lint/typecheck/test/build commands in docs/development/CHECKS.md"
+      ],
+      "status": "pending",
+      "active_owner": null,
+      "evidence": [],
+      "blockers": []
+    },
+    {
+      "id": "P1-02",
+      "phase": 1,
+      "title": "Implement identity, branch scope and catalog API",
+      "owner": "django-domain",
+      "depends_on": [
+        "P1-01"
+      ],
+      "suggested_write_scope": [
+        "apps/api/accounts/",
+        "apps/api/organizations/",
+        "apps/api/catalog/",
+        "apps/api/audit/",
+        "contracts/openapi.yaml"
+      ],
+      "acceptance": [
+        "Migrations apply on empty Postgres",
+        "Session/CSRF and direct unauthorized object requests tested",
+        "Variant units and published/private catalog fields tested"
+      ],
+      "status": "pending",
+      "active_owner": null,
+      "evidence": [],
+      "blockers": []
+    },
+    {
+      "id": "P1-03",
+      "phase": 1,
+      "title": "Create typed client and accessible catalog shell",
+      "owner": "nextjs-ui",
+      "depends_on": [
+        "P1-02"
+      ],
+      "suggested_write_scope": [
+        "packages/api-client/",
+        "apps/web/src/"
+      ],
+      "acceptance": [
+        "Client conforms to exported schema",
+        "Catalog list/detail and session states use actual local API",
+        "No private server response cached across users"
+      ],
+      "status": "pending",
+      "active_owner": null,
+      "evidence": [],
+      "blockers": []
+    },
+    {
+      "id": "P1-04",
+      "phase": 1,
+      "title": "Verify foundation vertical slice",
+      "owner": "quality-engineer",
+      "depends_on": [
+        "P1-03"
+      ],
+      "suggested_write_scope": [
+        "tests/e2e/",
+        "docs/evidence/P1-04.md"
+      ],
+      "acceptance": [
+        "Customer and employee catalog journeys pass",
+        "No credential/real store fixtures",
+        "Reviewer findings resolved before phase completion"
+      ],
+      "status": "pending",
+      "active_owner": null,
+      "evidence": [],
+      "blockers": []
+    },
+    {
+      "id": "P2-01",
+      "phase": 2,
+      "title": "Implement staged catalog import and provenance",
+      "owner": "catalog-data",
+      "depends_on": [
+        "P1-04"
+      ],
+      "suggested_write_scope": [
+        "apps/api/ingestion/",
+        "tests/fixtures/"
+      ],
+      "acceptance": [
+        "Import rerun idempotent",
+        "Distinct variants preserved; rejected rows reported",
+        "Imports cannot publish live stock or authoritative prices"
+      ],
+      "status": "pending",
+      "active_owner": null,
+      "evidence": [],
+      "blockers": []
+    },
+    {
+      "id": "P2-02",
+      "phase": 2,
+      "title": "Implement exact/fuzzy/synonym/attribute search",
+      "owner": "django-domain",
+      "depends_on": [
+        "P2-01"
+      ],
+      "suggested_write_scope": [
+        "apps/api/catalog/",
+        "contracts/openapi.yaml"
+      ],
+      "acceptance": [
+        "Exact SKU priority and Spanish synonyms verified",
+        "Hard attribute constraints enforced",
+        "Golden synthetic candidate cases meet recorded recall target"
+      ],
+      "status": "pending",
+      "active_owner": null,
+      "evidence": [],
+      "blockers": []
+    },
+    {
+      "id": "P2-03",
+      "phase": 2,
+      "title": "Integrate search cards and import report views",
+      "owner": "nextjs-ui",
+      "depends_on": [
+        "P2-02"
+      ],
+      "suggested_write_scope": [
+        "apps/web/src/features/catalog/",
+        "apps/web/src/features/ingestion/",
+        "packages/api-client/"
+      ],
+      "acceptance": [
+        "Search/filter/reset and empty/error states pass",
+        "Real catalog references or visibly synthetic fixtures only",
+        "Import reports restricted to authorized staff"
+      ],
+      "status": "pending",
+      "active_owner": null,
+      "evidence": [],
+      "blockers": []
+    },
+    {
+      "id": "P2-04",
+      "phase": 2,
+      "title": "Verify search and ingestion isolation",
+      "owner": "quality-engineer",
+      "depends_on": [
+        "P2-03"
+      ],
+      "suggested_write_scope": [
+        "tests/e2e/",
+        "docs/evidence/P2-04.md"
+      ],
+      "acceptance": [
+        "Import injection/invalid-data scenarios covered",
+        "Search relevance results recorded",
+        "Rights/source uncertainty remains visible"
+      ],
+      "status": "pending",
+      "active_owner": null,
+      "evidence": [],
+      "blockers": []
+    },
+    {
+      "id": "P3-01",
+      "phase": 3,
+      "title": "Implement inventory authority and locking",
+      "owner": "django-domain",
+      "depends_on": [
+        "P2-04"
+      ],
+      "suggested_write_scope": [
+        "apps/api/inventory/",
+        "apps/api/audit/",
+        "contracts/openapi.yaml"
+      ],
+      "acceptance": [
+        "UNKNOWN distinct from verified zero",
+        "Stock/source age and branch tests pass",
+        "Concurrent Postgres allocation and adjustment invariants hold",
+        "Authorized release/expiry still succeeds when source freshness is unavailable"
+      ],
+      "status": "pending",
+      "active_owner": null,
+      "evidence": [],
+      "blockers": []
+    },
+    {
+      "id": "P3-02",
+      "phase": 3,
+      "title": "Implement prices and immutable quotations",
+      "owner": "django-domain",
+      "depends_on": [
+        "P3-01"
+      ],
+      "suggested_write_scope": [
+        "apps/api/pricing/",
+        "apps/api/quotations/",
+        "contracts/openapi.yaml"
+      ],
+      "acceptance": [
+        "Decimal rounding and unit boundary cases tested",
+        "Issued snapshots immutable; version/expiry checks tested",
+        "Quotes never reserve stock"
+      ],
+      "status": "pending",
+      "active_owner": null,
+      "evidence": [],
+      "blockers": []
+    },
+    {
+      "id": "P3-03",
+      "phase": 3,
+      "title": "Implement reserved orders and fulfillment",
+      "owner": "django-domain",
+      "depends_on": [
+        "P3-02"
+      ],
+      "suggested_write_scope": [
+        "apps/api/sales/",
+        "apps/api/inventory/",
+        "contracts/openapi.yaml"
+      ],
+      "acceptance": [
+        "Conversion all-or-nothing and one order per accepted quote version",
+        "Expiry/picking/cancel races tested on Postgres",
+        "Repeated fulfillment cannot double-decrement stock",
+        "Concurrent same-key/different-payload requests conflict without duplicate effects"
+      ],
+      "status": "pending",
+      "active_owner": null,
+      "evidence": [],
+      "blockers": []
+    },
+    {
+      "id": "P3-04",
+      "phase": 3,
+      "title": "Implement quote, sales and warehouse journeys",
+      "owner": "nextjs-ui",
+      "depends_on": [
+        "P3-03"
+      ],
+      "suggested_write_scope": [
+        "apps/web/src/features/quotations/",
+        "apps/web/src/features/sales/",
+        "apps/web/src/features/inventory/",
+        "packages/api-client/"
+      ],
+      "acceptance": [
+        "Quote acceptance and order state UX follows actual APIs",
+        "Conflict/UNKNOWN and retry semantics handled",
+        "No payment concepts or controls introduced"
+      ],
+      "status": "pending",
+      "active_owner": null,
+      "evidence": [],
+      "blockers": []
+    },
+    {
+      "id": "P3-05",
+      "phase": 3,
+      "title": "Verify operational lifecycle and access controls",
+      "owner": "quality-engineer",
+      "depends_on": [
+        "P3-04"
+      ],
+      "suggested_write_scope": [
+        "tests/e2e/",
+        "docs/evidence/P3-05.md"
+      ],
+      "acceptance": [
+        "Quote-to-fulfillment E2E passes",
+        "Evidence includes real Postgres concurrency outcomes",
+        "Security reviewer resolves cross-scope/idempotency findings"
+      ],
+      "status": "pending",
+      "active_owner": null,
+      "evidence": [],
+      "blockers": []
+    },
+    {
+      "id": "P4-01",
+      "phase": 4,
+      "title": "Implement AI adapter, scoped reads and evidence validation",
+      "owner": "ai-copilot",
+      "depends_on": [
+        "P3-05"
+      ],
+      "suggested_write_scope": [
+        "apps/api/ai/"
+      ],
+      "acceptance": [
+        "Typed tools call domain services as caller",
+        "Unknown/unauthorized/stale evidence rejected",
+        "General prose cannot introduce unsupported store facts"
+      ],
+      "status": "pending",
+      "active_owner": null,
+      "evidence": [],
+      "blockers": []
+    },
+    {
+      "id": "P4-02",
+      "phase": 4,
+      "title": "Implement clarifications, policies and confirmed quote proposal",
+      "owner": "ai-copilot",
+      "depends_on": [
+        "P4-01"
+      ],
+      "suggested_write_scope": [
+        "apps/api/ai/",
+        "contracts/openapi.yaml"
+      ],
+      "acceptance": [
+        "All canonical scenarios represented",
+        "Explicit application confirmation required for draft quote",
+        "No reservation/order/price mutation tool"
+      ],
+      "status": "pending",
+      "active_owner": null,
+      "evidence": [],
+      "blockers": []
+    },
+    {
+      "id": "P4-03",
+      "phase": 4,
+      "title": "Implement grounded assistant interface",
+      "owner": "nextjs-ui",
+      "depends_on": [
+        "P4-02"
+      ],
+      "suggested_write_scope": [
+        "apps/web/src/features/ai/",
+        "packages/api-client/"
+      ],
+      "acceptance": [
+        "Hydrated cards and actual catalog candidate images",
+        "Freshness and failed-tool states understandable",
+        "No unvalidated recommendation streamed to user"
+      ],
+      "status": "pending",
+      "active_owner": null,
+      "evidence": [],
+      "blockers": []
+    },
+    {
+      "id": "P4-04",
+      "phase": 4,
+      "title": "Run offline and authorized provider evaluations",
+      "owner": "quality-engineer",
+      "depends_on": [
+        "P4-03"
+      ],
+      "suggested_write_scope": [
+        "apps/api/ai/evals/",
+        "tests/e2e/",
+        "docs/evidence/P4-04.md"
+      ],
+      "acceptance": [
+        "Offline and provider results labeled separately",
+        "Zero fabricated store claims and critical unsafe advice in release set",
+        "Record model/version/cost/latency and human review; provider budget authorization required"
+      ],
+      "status": "pending",
+      "active_owner": null,
+      "evidence": [],
+      "blockers": []
+    },
+    {
+      "id": "P5-01",
+      "phase": 5,
+      "title": "Complete scoped management APIs and service hardening",
+      "owner": "django-domain",
+      "depends_on": [
+        "P4-04"
+      ],
+      "suggested_write_scope": [
+        "apps/api/accounts/",
+        "apps/api/audit/",
+        "apps/api/config/",
+        "contracts/openapi.yaml"
+      ],
+      "acceptance": [
+        "Staff-management and audit endpoints enforce role/branch scope",
+        "Rate limits, retention and redacted diagnostics tested",
+        "Customer-facing schemas exclude internal costs and staff fields"
+      ],
+      "status": "pending",
+      "active_owner": null,
+      "evidence": [],
+      "blockers": []
+    },
+    {
+      "id": "P5-02",
+      "phase": 5,
+      "title": "Complete management, accessibility and observability",
+      "owner": "nextjs-ui",
+      "depends_on": [
+        "P5-01"
+      ],
+      "suggested_write_scope": [
+        "apps/web/src/features/management/",
+        "apps/web/src/components/"
+      ],
+      "acceptance": [
+        "Scoped staff/audit views use actual API",
+        "Keyboard/mobile loading/error states verified",
+        "Management views consume implemented scoped APIs"
+      ],
+      "status": "pending",
+      "active_owner": null,
+      "evidence": [],
+      "blockers": []
+    },
+    {
+      "id": "P5-03",
+      "phase": 5,
+      "title": "Rehearse backup restore and prepare runbooks",
+      "owner": "runtime-engineer",
+      "depends_on": [
+        "P5-02"
+      ],
+      "suggested_write_scope": [
+        "infra/local/",
+        "docs/operations/"
+      ],
+      "acceptance": [
+        "Local backup restored and domain balances reconciled",
+        "Recovery procedure and redacted diagnostics verified",
+        "No production deployment or paid resources created"
+      ],
+      "status": "pending",
+      "active_owner": null,
+      "evidence": [],
+      "blockers": []
+    },
+    {
+      "id": "P5-04",
+      "phase": 5,
+      "title": "Independent release readiness review",
+      "owner": "quality-engineer",
+      "depends_on": [
+        "P5-03"
+      ],
+      "suggested_write_scope": [
+        "tests/e2e/",
+        "docs/evidence/P5-04.md"
+      ],
+      "acceptance": [
+        "All phase gates have executed evidence",
+        "Security review has no unresolved release blockers",
+        "Real-data, business settings and hosting unknowns are explicit blockers"
+      ],
+      "status": "pending",
+      "active_owner": null,
+      "evidence": [],
+      "blockers": []
+    },
+    {
+      "id": "P6-01",
+      "phase": 6,
+      "title": "Scope optional expansions individually",
+      "owner": "platform-architect",
+      "depends_on": [
+        "P5-04"
+      ],
+      "suggested_write_scope": [
+        "docs/planning/"
+      ],
+      "acceptance": [
+        "Owner selects individual extensions",
+        "New state/contracts and tests proposed before code",
+        "Payments remain excluded"
+      ],
+      "status": "pending",
+      "active_owner": null,
+      "evidence": [],
+      "blockers": []
+    }
+  ]
+}
