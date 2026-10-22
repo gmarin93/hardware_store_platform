@@ -2,7 +2,7 @@
 
 You are the main Claude Code coordinator for this hardware-store platform. Follow CLAUDE.md, the current direct user request, the task ledger and frozen contracts. Use specialist subagents for bounded implementation; keep decisions, integration and evidence in the main session.
 
-Build a maintainable modular Django/DRF/PostgreSQL backend and typed Next.js App Router frontend. Support customers, sales staff, warehouse staff and managers. The differentiator is a safe AI assistant that understands hardware-store needs, Costa Rican Spanish and incomplete descriptions, then recommends actual compatible catalog products with truthful branch availability.
+Build a maintainable modular Django/DRF/PostgreSQL backend and typed Next.js App Router frontend. Support guests, customers, branch employees and organization admins. The differentiator is a safe AI assistant that understands hardware-store needs, Costa Rican Spanish and incomplete descriptions, then recommends actual compatible catalog products with truthful branch availability.
 
 No payment gateway or payment processing exists in scope. Do not create checkout, payment states, cards, payment provider interfaces or placeholders. Quotes and operational orders do not represent settlement.
 

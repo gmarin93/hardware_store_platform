@@ -24,3 +24,7 @@ test-results/
 data/raw/
 data/private/
 media/uploads/
+
+# Added by P1-01 (Next.js generated files)
+next-env.d.ts
+*.tsbuildinfo

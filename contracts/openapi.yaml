@@ -1,0 +1,1621 @@
+openapi: 3.0.3
+info:
+  title: Hardware Store Platform API
+  version: 0.1.0
+paths:
+  /api/v1/auth/csrf:
+    get:
+      operationId: auth_csrf_retrieve
+      description: Sets the CSRF cookie (readable by JS, sent back as ``X-CSRFToken``).
+      tags:
+      - auth
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/v1/auth/login:
+    post:
+      operationId: auth_login_create
+      description: |-
+        Enforce CSRF on unsafe methods before authentication and throttling.
+
+        For views reachable anonymously that change session state (login/logout).
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+        required: true
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Me'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: VALIDATION_ERROR, PARSE_ERROR, INVALID_CREDENTIALS o INVALID_CURSOR
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: PERMISSION_DENIED o CSRF_FAILED
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: THROTTLED
+  /api/v1/auth/logout:
+    post:
+      operationId: auth_logout_create
+      description: |-
+        Enforce CSRF on unsafe methods before authentication and throttling.
+
+        For views reachable anonymously that change session state (login/logout).
+      tags:
+      - auth
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: PERMISSION_DENIED o CSRF_FAILED
+  /api/v1/auth/me:
+    get:
+      operationId: auth_me_retrieve
+      tags:
+      - auth
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Me'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: NOT_AUTHENTICATED
+  /api/v1/branches:
+    get:
+      operationId: branches_list
+      description: Branches visible to the actor (silently filtered; customers get
+        []).
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: Cursor opaco devuelto como next_cursor o previous_cursor.
+        schema:
+          type: string
+      - name: page_size
+        required: false
+        in: query
+        description: Tamaño de página (1-100, por defecto 20).
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      tags:
+      - branches
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBranchList'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: VALIDATION_ERROR, PARSE_ERROR, INVALID_CREDENTIALS o INVALID_CURSOR
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: NOT_AUTHENTICATED
+  /api/v1/branches/{branch_id}:
+    get:
+      operationId: branches_retrieve
+      description: Invisible, other-organization and nonexistent branches are the
+        same 404.
+      parameters:
+      - in: path
+        name: branch_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - branches
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Branch'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: NOT_AUTHENTICATED
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: NOT_FOUND (también fuera de alcance)
+  /api/v1/catalog/products:
+    get:
+      operationId: catalog_products_list
+      summary: Productos publicados
+      parameters:
+      - in: query
+        name: brand
+        schema:
+          type: string
+          format: uuid
+        description: Id exacto de marca.
+      - in: query
+        name: category
+        schema:
+          type: string
+          format: uuid
+        description: Id exacto de categoría (sin subcategorías).
+      - name: cursor
+        required: false
+        in: query
+        description: Cursor opaco devuelto como next_cursor o previous_cursor.
+        schema:
+          type: string
+      - name: page_size
+        required: false
+        in: query
+        description: Tamaño de página (1-100, por defecto 20).
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      - in: query
+        name: q
+        schema:
+          type: string
+          maxLength: 100
+        description: 'Texto contenido en el nombre (sin distinguir mayúsculas). Búsqueda
+          difusa: P2.'
+      tags:
+      - Catálogo
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPublicProductList'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: VALIDATION_ERROR (parámetros de consulta) o INVALID_CURSOR
+  /api/v1/catalog/products/{product_id}:
+    get:
+      operationId: catalog_products_retrieve
+      summary: Producto publicado con sus variantes publicadas
+      parameters:
+      - in: path
+        name: product_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Catálogo
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicProductDetail'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: NOT_FOUND (también fuera de alcance)
+  /api/v1/catalog/staff/products:
+    get:
+      operationId: catalog_staff_products_list
+      summary: Productos de la organización en cualquier estado (personal)
+      parameters:
+      - in: query
+        name: brand
+        schema:
+          type: string
+          format: uuid
+        description: Id exacto de marca.
+      - in: query
+        name: category
+        schema:
+          type: string
+          format: uuid
+        description: Id exacto de categoría (sin subcategorías).
+      - name: cursor
+        required: false
+        in: query
+        description: Cursor opaco devuelto como next_cursor o previous_cursor.
+        schema:
+          type: string
+      - name: page_size
+        required: false
+        in: query
+        description: Tamaño de página (1-100, por defecto 20).
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      - in: query
+        name: q
+        schema:
+          type: string
+          maxLength: 100
+        description: 'Texto contenido en el nombre (sin distinguir mayúsculas). Búsqueda
+          difusa: P2.'
+      - in: query
+        name: status
+        schema:
+          allOf:
+          - $ref: '#/components/schemas/CatalogStatus'
+        description: Filtrar por estado.
+      tags:
+      - Catálogo (personal)
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStaffProductList'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: VALIDATION_ERROR (parámetros de consulta) o INVALID_CURSOR
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: NOT_AUTHENTICATED
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: PERMISSION_DENIED o CSRF_FAILED
+  /api/v1/catalog/staff/products/{product_id}:
+    get:
+      operationId: catalog_staff_products_retrieve
+      summary: Producto con campos internos y procedencia (personal)
+      parameters:
+      - in: path
+        name: product_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Catálogo (personal)
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffProductDetail'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: NOT_AUTHENTICATED
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: PERMISSION_DENIED o CSRF_FAILED
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: NOT_FOUND (también fuera de alcance)
+  /api/v1/catalog/staff/variants:
+    get:
+      operationId: catalog_staff_variants_list
+      summary: Variante por SKU exacto en cualquier estado (personal)
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: Cursor opaco devuelto como next_cursor o previous_cursor.
+        schema:
+          type: string
+      - name: page_size
+        required: false
+        in: query
+        description: Tamaño de página (1-100, por defecto 20).
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      - in: query
+        name: sku
+        schema:
+          type: string
+          maxLength: 64
+          minLength: 1
+        description: SKU exacto. Se eliminan espacios al inicio y al final y se compara
+          en mayúsculas (los SKU se guardan en mayúsculas); no hay coincidencia parcial.
+        required: true
+      tags:
+      - Catálogo (personal)
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStaffVariantDetailList'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: VALIDATION_ERROR (parámetros de consulta) o INVALID_CURSOR
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: NOT_AUTHENTICATED
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: PERMISSION_DENIED o CSRF_FAILED
+  /api/v1/catalog/staff/variants/{variant_id}:
+    get:
+      operationId: catalog_staff_variants_retrieve
+      summary: Variante con campos internos y procedencia (personal)
+      parameters:
+      - in: path
+        name: variant_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Catálogo (personal)
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffVariantDetail'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: NOT_AUTHENTICATED
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: PERMISSION_DENIED o CSRF_FAILED
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: NOT_FOUND (también fuera de alcance)
+  /api/v1/catalog/variants:
+    get:
+      operationId: catalog_variants_list
+      description: '``sku`` is required in P1 (exact match; at most one result).'
+      summary: Variante publicada por SKU exacto
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: Cursor opaco devuelto como next_cursor o previous_cursor.
+        schema:
+          type: string
+      - name: page_size
+        required: false
+        in: query
+        description: Tamaño de página (1-100, por defecto 20).
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      - in: query
+        name: sku
+        schema:
+          type: string
+          maxLength: 64
+          minLength: 1
+        description: SKU exacto. Se eliminan espacios al inicio y al final y se compara
+          en mayúsculas (los SKU se guardan en mayúsculas); no hay coincidencia parcial.
+        required: true
+      tags:
+      - Catálogo
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPublicVariantDetailList'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: VALIDATION_ERROR (parámetros de consulta) o INVALID_CURSOR
+  /api/v1/catalog/variants/{variant_id}:
+    get:
+      operationId: catalog_variants_retrieve
+      summary: Variante publicada
+      parameters:
+      - in: path
+        name: variant_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Catálogo
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicVariantDetail'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: NOT_FOUND (también fuera de alcance)
+  /api/v1/health:
+    get:
+      operationId: health_retrieve
+      tags:
+      - health
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthUnavailable'
+          description: ''
+components:
+  schemas:
+    AttributeUnit:
+      type: string
+      enum:
+      - mm
+      - cm
+      - m
+      - in
+      - g
+      - kg
+      - ml
+      - l
+      - V
+      - A
+      - W
+      description: |-
+        * `mm` - milímetro
+        * `cm` - centímetro
+        * `m` - metro
+        * `in` - pulgada
+        * `g` - gramo
+        * `kg` - kilogramo
+        * `ml` - mililitro
+        * `l` - litro
+        * `V` - voltio
+        * `A` - amperio
+        * `W` - vatio
+    AttributeValueType:
+      type: string
+      enum:
+      - DECIMAL
+      - TEXT
+      - BOOLEAN
+      description: |-
+        * `DECIMAL` - Decimal
+        * `TEXT` - Texto
+        * `BOOLEAN` - Sí/No
+    Branch:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        code:
+          type: string
+          readOnly: true
+          pattern: ^[-a-zA-Z0-9_]+$
+        name:
+          type: string
+          readOnly: true
+        organization:
+          type: string
+          format: uuid
+          readOnly: true
+      required:
+      - code
+      - id
+      - name
+      - organization
+    BrandSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        slug:
+          type: string
+          readOnly: true
+          pattern: ^[-a-zA-Z0-9_]+$
+      required:
+      - id
+      - name
+      - slug
+    CatalogStatus:
+      type: string
+      enum:
+      - DRAFT
+      - PUBLISHED
+      - ARCHIVED
+      description: |-
+        * `DRAFT` - Borrador
+        * `PUBLISHED` - Publicado
+        * `ARCHIVED` - Archivado
+    CategorySummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        slug:
+          type: string
+          readOnly: true
+          pattern: ^[-a-zA-Z0-9_]+$
+      required:
+      - id
+      - name
+      - slug
+    ErrorEnvelope:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Código estable UPPER_SNAKE.
+        message:
+          type: string
+          description: Mensaje en español (es-CR).
+        field_errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              $ref: '#/components/schemas/FieldError'
+          description: Errores por campo (ruta con puntos) o {}.
+        request_id:
+          type: string
+      required:
+      - code
+      - field_errors
+      - message
+      - request_id
+    FieldError:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+      required:
+      - code
+      - message
+    Health:
+      type: object
+      properties:
+        status:
+          type: string
+        database:
+          type: string
+      required:
+      - database
+      - status
+    HealthUnavailable:
+      type: object
+      properties:
+        status:
+          type: string
+        database:
+          type: string
+      required:
+      - database
+      - status
+    Login:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        password:
+          type: string
+          writeOnly: true
+          maxLength: 256
+      required:
+      - email
+      - password
+    Me:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/MeUser'
+        organization:
+          allOf:
+          - $ref: '#/components/schemas/MeOrganization'
+          nullable: true
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        branches:
+          type: array
+          items:
+            $ref: '#/components/schemas/MeBranch'
+        permissions:
+          type: array
+          items:
+            type: string
+      required:
+      - branches
+      - organization
+      - permissions
+      - role
+      - user
+    MeBranch:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        name:
+          type: string
+      required:
+      - code
+      - id
+      - name
+    MeOrganization:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        slug:
+          type: string
+          pattern: ^[-a-zA-Z0-9_]+$
+        name:
+          type: string
+        is_synthetic:
+          type: boolean
+      required:
+      - id
+      - is_synthetic
+      - name
+      - slug
+    MeUser:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        full_name:
+          type: string
+      required:
+      - email
+      - full_name
+      - id
+    MediaStatus:
+      type: string
+      enum:
+      - APPROVED
+      - DRAFT
+      description: |-
+        * `APPROVED` - Aprobada
+        * `DRAFT` - Borrador
+    PaginatedBranchList:
+      type: object
+      required:
+      - results
+      - next_cursor
+      - previous_cursor
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Branch'
+        next_cursor:
+          type: string
+          nullable: true
+        previous_cursor:
+          type: string
+          nullable: true
+    PaginatedPublicProductList:
+      type: object
+      required:
+      - results
+      - next_cursor
+      - previous_cursor
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicProduct'
+        next_cursor:
+          type: string
+          nullable: true
+        previous_cursor:
+          type: string
+          nullable: true
+    PaginatedPublicVariantDetailList:
+      type: object
+      required:
+      - results
+      - next_cursor
+      - previous_cursor
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicVariantDetail'
+        next_cursor:
+          type: string
+          nullable: true
+        previous_cursor:
+          type: string
+          nullable: true
+    PaginatedStaffProductList:
+      type: object
+      required:
+      - results
+      - next_cursor
+      - previous_cursor
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffProduct'
+        next_cursor:
+          type: string
+          nullable: true
+        previous_cursor:
+          type: string
+          nullable: true
+    PaginatedStaffVariantDetailList:
+      type: object
+      required:
+      - results
+      - next_cursor
+      - previous_cursor
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffVariantDetail'
+        next_cursor:
+          type: string
+          nullable: true
+        previous_cursor:
+          type: string
+          nullable: true
+    PublicAttribute:
+      type: object
+      properties:
+        code:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        value_type:
+          allOf:
+          - $ref: '#/components/schemas/AttributeValueType'
+          readOnly: true
+        value:
+          type: string
+          description: 'Valor como texto: decimal ("12.7"), texto libre o "true"/"false"
+            según value_type.'
+          readOnly: true
+        unit:
+          allOf:
+          - $ref: '#/components/schemas/AttributeUnit'
+          readOnly: true
+          nullable: true
+      required:
+      - code
+      - name
+      - unit
+      - value
+      - value_type
+    PublicMedia:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        url:
+          type: string
+          readOnly: true
+        alt_text:
+          type: string
+          readOnly: true
+      required:
+      - alt_text
+      - id
+      - url
+    PublicProduct:
+      type: object
+      description: '``GET /catalog/products`` items.'
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        description:
+          type: string
+          readOnly: true
+        brand:
+          allOf:
+          - $ref: '#/components/schemas/BrandSummary'
+          readOnly: true
+          nullable: true
+        category:
+          allOf:
+          - $ref: '#/components/schemas/CategorySummary'
+          readOnly: true
+          nullable: true
+        media:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicMedia'
+          readOnly: true
+      required:
+      - brand
+      - category
+      - description
+      - id
+      - media
+      - name
+    PublicProductDetail:
+      type: object
+      description: '``GET /catalog/products/{id}``: published variants embedded.'
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        description:
+          type: string
+          readOnly: true
+        brand:
+          allOf:
+          - $ref: '#/components/schemas/BrandSummary'
+          readOnly: true
+          nullable: true
+        category:
+          allOf:
+          - $ref: '#/components/schemas/CategorySummary'
+          readOnly: true
+          nullable: true
+        media:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicMedia'
+          readOnly: true
+        attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicAttribute'
+          readOnly: true
+        variants:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicVariant'
+          readOnly: true
+      required:
+      - attributes
+      - brand
+      - category
+      - description
+      - id
+      - media
+      - name
+      - variants
+    PublicVariant:
+      type: object
+      description: A published variant as embedded in a public product.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        sku:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        sales_unit:
+          allOf:
+          - $ref: '#/components/schemas/Unit'
+          readOnly: true
+        quantity_increment:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,11}(?:\.\d{0,3})?$
+          readOnly: true
+        min_quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,11}(?:\.\d{0,3})?$
+          readOnly: true
+        attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicAttribute'
+          readOnly: true
+        media:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicMedia'
+          readOnly: true
+      required:
+      - attributes
+      - id
+      - media
+      - min_quantity
+      - name
+      - quantity_increment
+      - sales_unit
+      - sku
+    PublicVariantDetail:
+      type: object
+      description: '``GET /catalog/variants/{id}`` and ``GET /catalog/variants?sku=``
+        items.'
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        sku:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        sales_unit:
+          allOf:
+          - $ref: '#/components/schemas/Unit'
+          readOnly: true
+        quantity_increment:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,11}(?:\.\d{0,3})?$
+          readOnly: true
+        min_quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,11}(?:\.\d{0,3})?$
+          readOnly: true
+        attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicAttribute'
+          readOnly: true
+        media:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicMedia'
+          readOnly: true
+        product:
+          allOf:
+          - $ref: '#/components/schemas/PublicVariantProduct'
+          readOnly: true
+      required:
+      - attributes
+      - id
+      - media
+      - min_quantity
+      - name
+      - product
+      - quantity_increment
+      - sales_unit
+      - sku
+    PublicVariantProduct:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        description:
+          type: string
+          readOnly: true
+        brand:
+          allOf:
+          - $ref: '#/components/schemas/BrandSummary'
+          readOnly: true
+          nullable: true
+        category:
+          allOf:
+          - $ref: '#/components/schemas/CategorySummary'
+          readOnly: true
+          nullable: true
+      required:
+      - brand
+      - category
+      - description
+      - id
+      - name
+    RoleEnum:
+      enum:
+      - GUEST
+      - CUSTOMER
+      - EMPLOYEE
+      - ADMIN
+      type: string
+      description: |-
+        * `GUEST` - GUEST
+        * `CUSTOMER` - CUSTOMER
+        * `EMPLOYEE` - EMPLOYEE
+        * `ADMIN` - ADMIN
+    SourceReference:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        source_name:
+          type: string
+          readOnly: true
+        external_id:
+          type: string
+          readOnly: true
+        source_url:
+          type: string
+          readOnly: true
+        observed_at:
+          type: string
+          format: date-time
+          readOnly: true
+        is_synthetic:
+          type: boolean
+          readOnly: true
+      required:
+      - external_id
+      - id
+      - is_synthetic
+      - observed_at
+      - source_name
+      - source_url
+    StaffAttribute:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        code:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        value_type:
+          allOf:
+          - $ref: '#/components/schemas/AttributeValueType'
+          readOnly: true
+        value:
+          type: string
+          description: 'Valor como texto: decimal ("12.7"), texto libre o "true"/"false"
+            según value_type.'
+          readOnly: true
+        unit:
+          allOf:
+          - $ref: '#/components/schemas/AttributeUnit'
+          readOnly: true
+          nullable: true
+        is_published:
+          type: boolean
+          readOnly: true
+      required:
+      - code
+      - id
+      - is_published
+      - name
+      - unit
+      - value
+      - value_type
+    StaffMedia:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        url:
+          type: string
+          readOnly: true
+        alt_text:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/MediaStatus'
+          readOnly: true
+        sort_order:
+          type: integer
+          readOnly: true
+      required:
+      - alt_text
+      - id
+      - sort_order
+      - status
+      - url
+    StaffProduct:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        description:
+          type: string
+          readOnly: true
+        brand:
+          allOf:
+          - $ref: '#/components/schemas/BrandSummary'
+          readOnly: true
+          nullable: true
+        category:
+          allOf:
+          - $ref: '#/components/schemas/CategorySummary'
+          readOnly: true
+          nullable: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/CatalogStatus'
+          readOnly: true
+        internal_notes:
+          type: string
+          readOnly: true
+        media:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffMedia'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - brand
+      - category
+      - created_at
+      - description
+      - id
+      - internal_notes
+      - media
+      - name
+      - status
+      - updated_at
+    StaffProductDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        description:
+          type: string
+          readOnly: true
+        brand:
+          allOf:
+          - $ref: '#/components/schemas/BrandSummary'
+          readOnly: true
+          nullable: true
+        category:
+          allOf:
+          - $ref: '#/components/schemas/CategorySummary'
+          readOnly: true
+          nullable: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/CatalogStatus'
+          readOnly: true
+        internal_notes:
+          type: string
+          readOnly: true
+        media:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffMedia'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffAttribute'
+          readOnly: true
+        variants:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffVariant'
+          readOnly: true
+        source_references:
+          type: array
+          items:
+            $ref: '#/components/schemas/SourceReference'
+          readOnly: true
+      required:
+      - attributes
+      - brand
+      - category
+      - created_at
+      - description
+      - id
+      - internal_notes
+      - media
+      - name
+      - source_references
+      - status
+      - updated_at
+      - variants
+    StaffVariant:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        sku:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/CatalogStatus'
+          readOnly: true
+        sales_unit:
+          allOf:
+          - $ref: '#/components/schemas/Unit'
+          readOnly: true
+        stock_unit:
+          allOf:
+          - $ref: '#/components/schemas/Unit'
+          readOnly: true
+        quantity_increment:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,11}(?:\.\d{0,3})?$
+          readOnly: true
+        min_quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,11}(?:\.\d{0,3})?$
+          readOnly: true
+        supplier_code:
+          type: string
+          readOnly: true
+        internal_notes:
+          type: string
+          readOnly: true
+        attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffAttribute'
+          readOnly: true
+        media:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffMedia'
+          readOnly: true
+        source_references:
+          type: array
+          items:
+            $ref: '#/components/schemas/SourceReference'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - attributes
+      - created_at
+      - id
+      - internal_notes
+      - media
+      - min_quantity
+      - name
+      - quantity_increment
+      - sales_unit
+      - sku
+      - source_references
+      - status
+      - stock_unit
+      - supplier_code
+      - updated_at
+    StaffVariantDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        sku:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/CatalogStatus'
+          readOnly: true
+        sales_unit:
+          allOf:
+          - $ref: '#/components/schemas/Unit'
+          readOnly: true
+        stock_unit:
+          allOf:
+          - $ref: '#/components/schemas/Unit'
+          readOnly: true
+        quantity_increment:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,11}(?:\.\d{0,3})?$
+          readOnly: true
+        min_quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,11}(?:\.\d{0,3})?$
+          readOnly: true
+        supplier_code:
+          type: string
+          readOnly: true
+        internal_notes:
+          type: string
+          readOnly: true
+        attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffAttribute'
+          readOnly: true
+        media:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffMedia'
+          readOnly: true
+        source_references:
+          type: array
+          items:
+            $ref: '#/components/schemas/SourceReference'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        product:
+          allOf:
+          - $ref: '#/components/schemas/StaffVariantProduct'
+          readOnly: true
+      required:
+      - attributes
+      - created_at
+      - id
+      - internal_notes
+      - media
+      - min_quantity
+      - name
+      - product
+      - quantity_increment
+      - sales_unit
+      - sku
+      - source_references
+      - status
+      - stock_unit
+      - supplier_code
+      - updated_at
+    StaffVariantProduct:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/CatalogStatus'
+          readOnly: true
+        brand:
+          allOf:
+          - $ref: '#/components/schemas/BrandSummary'
+          readOnly: true
+          nullable: true
+        category:
+          allOf:
+          - $ref: '#/components/schemas/CategorySummary'
+          readOnly: true
+          nullable: true
+      required:
+      - brand
+      - category
+      - id
+      - name
+      - status
+    Unit:
+      type: string
+      enum:
+      - piece
+      - m
+      - cm
+      - kg
+      - g
+      - l
+      description: |-
+        * `piece` - pieza
+        * `m` - metro
+        * `cm` - centímetro
+        * `kg` - kilogramo
+        * `g` - gramo
+        * `l` - litro
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid

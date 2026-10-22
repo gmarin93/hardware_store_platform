@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "provider": "linear",
+  "workspace_slug": "hardware-store",
+  "workspace_id": null,
+  "workspace_id_note": "No immutable workspace ID was exposed by the verified connector response; do not invent one.",
+  "team_key": "HAR",
+  "team_id": "fbeb8b14-807c-4152-9794-c014afb4008b",
+  "project_identifier": "P-HAR-1",
+  "project_id": "fa87e75c-37e5-4cda-8945-2e286fa1cce0",
+  "project_url": "https://linear.app/hardware-store/project/hardware-store-platform-delivery-5c170417d4f8",
+  "board_url": "https://linear.app/hardware-store/team/HAR/active",
+  "issue_key_pattern": "^HAR-[1-9][0-9]*$",
+  "default_remote_operations": "read-only",
+  "snapshot_root": "docs/tickets/linear",
+  "example_issue": {
+    "identifier": "HAR-88",
+    "issue_id": "7652f967-364e-44a0-a4b4-c0f7c554874d",
+    "note": "Real design ticket; provided as a plan-mode example, not executed or completed by this configuration update."
+  }
+}

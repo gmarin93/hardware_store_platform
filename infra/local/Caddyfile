@@ -1,0 +1,35 @@
+# Local same-origin reverse proxy (ADR 0001).
+# Only /api/v1/* reaches the fixed Django upstream; everything else goes to Next.js.
+# No path-derived upstreams. Django admin is not mounted and not routed.
+{
+	admin off
+	auto_https off
+	persist_config off
+}
+
+:80 {
+	handle /api/v1/* {
+		reverse_proxy api:8000
+	}
+
+	handle {
+		reverse_proxy web:3000
+	}
+
+	# Never log CSRF tokens, cookies or credentials (ADR 0001). Caddy already
+	# redacts Cookie/Set-Cookie/Authorization by default; these deletes are
+	# explicit and defensive. Header keys are Go-canonicalized (X-Csrftoken).
+	log {
+		output stdout
+		format filter {
+			wrap console
+			fields {
+				request>headers>X-Csrftoken delete
+				request>headers>Cookie delete
+				request>headers>Authorization delete
+				request>headers>Proxy-Authorization delete
+				resp_headers>Set-Cookie delete
+			}
+		}
+	}
+}

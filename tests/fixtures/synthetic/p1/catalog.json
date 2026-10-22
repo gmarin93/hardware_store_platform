@@ -1,0 +1,398 @@
+{
+  "format": "hardware-store-synthetic-catalog",
+  "version": 1,
+  "notice": "Datos de demostración SINTÉTICOS. Productos, marcas, sucursales, personas y códigos son ficticios y no representan datos reales de ninguna ferretería.",
+  "source": {
+    "name": "Datos sintéticos P1",
+    "url_prefix": "https://datos-sinteticos.example.test/p1/",
+    "observed_at": "2026-10-21T12:00:00-06:00"
+  },
+  "organizations": [
+    {
+      "slug": null,
+      "name": "Ferretería Demo (SINTÉTICO)",
+      "branches": [
+        {"code": "central", "name": "Sucursal Central (SINTÉTICO)"},
+        {"code": "norte", "name": "Sucursal Norte (SINTÉTICO)"}
+      ],
+      "demo_users": [
+        {"email": "admin.demo@example.test", "full_name": "Administración Demo (SINTÉTICO)", "role": "ADMIN"},
+        {"email": "empleado.central@example.test", "full_name": "Empleado Central (SINTÉTICO)", "role": "EMPLOYEE", "branches": ["central"]},
+        {"email": "empleado.norte@example.test", "full_name": "Empleada Norte (SINTÉTICO)", "role": "EMPLOYEE", "branches": ["norte"]},
+        {"email": "cliente.demo@example.test", "full_name": "Cliente Demo (SINTÉTICO)", "role": "CUSTOMER"}
+      ],
+      "brands": [
+        {"slug": "alfa-ficticia", "name": "Marca Alfa (SINTÉTICO)"},
+        {"slug": "beta-ficticia", "name": "Marca Beta (SINTÉTICO)"},
+        {"slug": "gamma-ficticia", "name": "Marca Gamma (SINTÉTICO)"}
+      ],
+      "categories": [
+        {"slug": "tornilleria", "name": "Tornillería y fijaciones (SINTÉTICO)"},
+        {"slug": "plomeria", "name": "Plomería (SINTÉTICO)"},
+        {"slug": "electricidad", "name": "Electricidad (SINTÉTICO)"},
+        {"slug": "cerrajeria", "name": "Cerrajería y herrajes (SINTÉTICO)"},
+        {"slug": "pinturas", "name": "Pinturas y solventes (SINTÉTICO)"},
+        {"slug": "bisagras", "name": "Bisagras (SINTÉTICO)", "parent": "cerrajeria"}
+      ],
+      "attribute_definitions": [
+        {"code": "material", "name": "Material", "value_type": "TEXT"},
+        {"code": "longitud", "name": "Longitud", "value_type": "DECIMAL", "unit": "mm"},
+        {"code": "diametro-nominal", "name": "Diámetro nominal", "value_type": "DECIMAL", "unit": "in"},
+        {"code": "calibre-awg", "name": "Calibre (AWG)", "value_type": "DECIMAL"},
+        {"code": "tension-maxima", "name": "Tensión máxima", "value_type": "DECIMAL", "unit": "V"},
+        {"code": "uso-exterior", "name": "Apto para exterior", "value_type": "BOOLEAN"},
+        {"code": "nota-empaque", "name": "Nota de empaque (interna)", "value_type": "TEXT"}
+      ],
+      "products": [
+        {
+          "external_id": "P1-PROD-001",
+          "name": "Tornillo para madera cabeza plana SINTÉTICO",
+          "description": "Producto SINTÉTICO de demostración: tornillo punta fina para madera, cabeza plana Phillips.",
+          "status": "PUBLISHED",
+          "brand": "alfa-ficticia",
+          "category": "tornilleria",
+          "internal_notes": "Nota interna SINTÉTICA: revisar rotulación de cajas.",
+          "attributes": [
+            {"code": "material", "value": "Acero zincado", "published": true},
+            {"code": "uso-exterior", "value": false, "published": true},
+            {"code": "nota-empaque", "value": "Cajas de cartón reciclado (dato interno SINTÉTICO)", "published": false}
+          ],
+          "media": [
+            {"url": "/catalog-media/sintetico/tornillo-madera.svg", "alt_text": "Ilustración de un tornillo para madera (SINTÉTICO)", "status": "APPROVED"},
+            {"url": "/catalog-media/sintetico/tornillo-madera-borrador.svg", "alt_text": "Borrador sin aprobar (SINTÉTICO)", "status": "DRAFT", "sort_order": 1}
+          ],
+          "variants": [
+            {
+              "sku": "SIN-TOR-8X1",
+              "name": "Tornillo 8 x 1 pulg., unidad SINTÉTICO",
+              "status": "PUBLISHED",
+              "unit": "piece",
+              "increment": "1",
+              "min_quantity": "1",
+              "supplier_code": "PROV-FICT-0001",
+              "attributes": [{"code": "longitud", "value": "25.4", "published": true}]
+            },
+            {
+              "sku": "SIN-TOR-8X1-C100",
+              "name": "Tornillo 8 x 1 pulg., caja de 100 SINTÉTICO",
+              "status": "PUBLISHED",
+              "unit": "piece",
+              "increment": "1",
+              "min_quantity": "1",
+              "supplier_code": "PROV-FICT-0002",
+              "attributes": [{"code": "longitud", "value": "25.4", "published": true}]
+            },
+            {
+              "sku": "SIN-TOR-8X2",
+              "name": "Tornillo 8 x 2 pulg., unidad SINTÉTICO (borrador)",
+              "status": "DRAFT",
+              "unit": "piece",
+              "increment": "1",
+              "min_quantity": "10",
+              "supplier_code": "PROV-FICT-0003",
+              "internal_notes": "Variante SINTÉTICA en borrador: pendiente de aprobación.",
+              "attributes": [{"code": "longitud", "value": "50.8", "published": true}]
+            }
+          ]
+        },
+        {
+          "external_id": "P1-PROD-002",
+          "name": "Tubo PVC presión SINTÉTICO",
+          "description": "Producto SINTÉTICO de demostración: tubo de PVC para agua potable, venta por metro.",
+          "status": "PUBLISHED",
+          "brand": "beta-ficticia",
+          "category": "plomeria",
+          "attributes": [
+            {"code": "material", "value": "PVC", "published": true},
+            {"code": "uso-exterior", "value": true, "published": true}
+          ],
+          "media": [
+            {"url": "/catalog-media/sintetico/tubo-pvc.svg", "alt_text": "Ilustración de un tubo de PVC (SINTÉTICO)", "status": "APPROVED"}
+          ],
+          "variants": [
+            {
+              "sku": "SIN-PVC-050-M",
+              "name": "Tubo PVC 1/2 pulg. por metro SINTÉTICO",
+              "status": "PUBLISHED",
+              "unit": "m",
+              "increment": "0.5",
+              "min_quantity": "1",
+              "supplier_code": "PROV-FICT-0101",
+              "attributes": [{"code": "diametro-nominal", "value": "0.5", "unit": "in", "published": true}]
+            },
+            {
+              "sku": "SIN-PVC-075-M",
+              "name": "Tubo PVC 3/4 pulg. por metro SINTÉTICO",
+              "status": "ARCHIVED",
+              "unit": "m",
+              "increment": "0.5",
+              "min_quantity": "1",
+              "supplier_code": "PROV-FICT-0102",
+              "attributes": [{"code": "diametro-nominal", "value": "0.75", "unit": "in", "published": true}]
+            }
+          ]
+        },
+        {
+          "external_id": "P1-PROD-003",
+          "name": "Cable eléctrico THHN SINTÉTICO",
+          "description": "Producto SINTÉTICO de demostración: cable de cobre con aislamiento THHN, venta por metro.",
+          "status": "PUBLISHED",
+          "brand": "gamma-ficticia",
+          "category": "electricidad",
+          "attributes": [
+            {"code": "material", "value": "Cobre", "published": true},
+            {"code": "tension-maxima", "value": "600", "unit": "V", "published": true}
+          ],
+          "media": [
+            {"url": "/catalog-media/sintetico/cable-thhn.svg", "alt_text": "Ilustración de un rollo de cable (SINTÉTICO)", "status": "APPROVED"}
+          ],
+          "variants": [
+            {
+              "sku": "SIN-CAB-12-M",
+              "name": "Cable THHN 12 AWG por metro SINTÉTICO",
+              "status": "PUBLISHED",
+              "unit": "m",
+              "increment": "1",
+              "min_quantity": "1",
+              "supplier_code": "PROV-FICT-0201",
+              "attributes": [{"code": "calibre-awg", "value": "12", "published": true}],
+              "media": [
+                {"url": "/catalog-media/sintetico/cable-thhn-12.svg", "alt_text": "Detalle del cable 12 AWG (SINTÉTICO)", "status": "APPROVED"}
+              ]
+            },
+            {
+              "sku": "SIN-CAB-14-CM",
+              "name": "Cable THHN 14 AWG por centímetro SINTÉTICO",
+              "status": "PUBLISHED",
+              "unit": "cm",
+              "increment": "10",
+              "min_quantity": "50",
+              "supplier_code": "PROV-FICT-0202",
+              "attributes": [{"code": "calibre-awg", "value": "14", "published": true}]
+            }
+          ]
+        },
+        {
+          "external_id": "P1-PROD-004",
+          "name": "Bisagra de acero SINTÉTICO",
+          "description": "Producto SINTÉTICO de demostración: bisagra de libro para puertas de madera.",
+          "status": "PUBLISHED",
+          "brand": "alfa-ficticia",
+          "category": "bisagras",
+          "attributes": [{"code": "material", "value": "Acero inoxidable", "published": true}],
+          "media": [
+            {"url": "/catalog-media/sintetico/bisagra.svg", "alt_text": "Ilustración de una bisagra (SINTÉTICO)", "status": "APPROVED"}
+          ],
+          "variants": [
+            {
+              "sku": "SIN-BIS-3",
+              "name": "Bisagra 3 pulg. SINTÉTICO",
+              "status": "PUBLISHED",
+              "unit": "piece",
+              "increment": "1",
+              "min_quantity": "2",
+              "supplier_code": "PROV-FICT-0301",
+              "attributes": [{"code": "longitud", "value": "76.2", "published": true}]
+            },
+            {
+              "sku": "SIN-BIS-4",
+              "name": "Bisagra 4 pulg. SINTÉTICO",
+              "status": "PUBLISHED",
+              "unit": "piece",
+              "increment": "2",
+              "min_quantity": "2",
+              "supplier_code": "PROV-FICT-0302",
+              "attributes": [{"code": "longitud", "value": "101.6", "published": true}]
+            }
+          ]
+        },
+        {
+          "external_id": "P1-PROD-005",
+          "name": "Clavo de acero para concreto SINTÉTICO",
+          "description": "Producto SINTÉTICO de demostración: clavo templado vendido a granel por peso.",
+          "status": "PUBLISHED",
+          "brand": "beta-ficticia",
+          "category": "tornilleria",
+          "attributes": [{"code": "material", "value": "Acero templado", "published": true}],
+          "media": [],
+          "variants": [
+            {
+              "sku": "SIN-CLA-2-KG",
+              "name": "Clavo para concreto 2 pulg. por kilo SINTÉTICO",
+              "status": "PUBLISHED",
+              "unit": "kg",
+              "increment": "0.25",
+              "min_quantity": "0.5",
+              "supplier_code": "PROV-FICT-0401",
+              "attributes": [{"code": "longitud", "value": "50.8", "published": true}]
+            },
+            {
+              "sku": "SIN-CLA-1-G",
+              "name": "Clavo para concreto 1 pulg. por gramo SINTÉTICO",
+              "status": "PUBLISHED",
+              "unit": "g",
+              "increment": "50",
+              "min_quantity": "100",
+              "supplier_code": "PROV-FICT-0402",
+              "attributes": [{"code": "longitud", "value": "25.4", "published": true}]
+            }
+          ]
+        },
+        {
+          "external_id": "P1-PROD-006",
+          "name": "Alambre de amarre SINTÉTICO",
+          "description": "Producto SINTÉTICO de demostración: alambre recocido para amarre, venta por kilo con precisión de gramo.",
+          "status": "PUBLISHED",
+          "brand": "gamma-ficticia",
+          "category": "tornilleria",
+          "attributes": [{"code": "material", "value": "Acero recocido", "published": true}],
+          "media": [],
+          "variants": [
+            {
+              "sku": "SIN-ALA-16-KG",
+              "name": "Alambre de amarre calibre 16 por kilo SINTÉTICO",
+              "status": "PUBLISHED",
+              "unit": "kg",
+              "increment": "0.001",
+              "min_quantity": "0.1",
+              "supplier_code": "PROV-FICT-0501",
+              "attributes": [{"code": "calibre-awg", "value": "16", "published": true}]
+            }
+          ]
+        },
+        {
+          "external_id": "P1-PROD-007",
+          "name": "Diluyente (thinner) SINTÉTICO",
+          "description": "Producto SINTÉTICO de demostración: diluyente para pintura de aceite, venta por litro.",
+          "status": "PUBLISHED",
+          "brand": "beta-ficticia",
+          "category": "pinturas",
+          "attributes": [],
+          "media": [
+            {"url": "/catalog-media/sintetico/diluyente.svg", "alt_text": "Ilustración de un envase de diluyente (SINTÉTICO)", "status": "APPROVED"}
+          ],
+          "variants": [
+            {
+              "sku": "SIN-DIL-L",
+              "name": "Diluyente por litro SINTÉTICO",
+              "status": "PUBLISHED",
+              "unit": "l",
+              "increment": "0.25",
+              "min_quantity": "0.5",
+              "supplier_code": "PROV-FICT-0601"
+            }
+          ]
+        },
+        {
+          "external_id": "P1-PROD-008",
+          "name": "Llave de paso de bronce SINTÉTICO (borrador)",
+          "description": "Producto SINTÉTICO de demostración en borrador: no debe aparecer en el catálogo público.",
+          "status": "DRAFT",
+          "brand": "alfa-ficticia",
+          "category": "plomeria",
+          "internal_notes": "Borrador SINTÉTICO: falta revisar ficha técnica.",
+          "attributes": [{"code": "material", "value": "Bronce", "published": true}],
+          "media": [
+            {"url": "/catalog-media/sintetico/llave-paso.svg", "alt_text": "Ilustración de una llave de paso (SINTÉTICO)", "status": "DRAFT"}
+          ],
+          "variants": [
+            {
+              "sku": "SIN-LLP-050",
+              "name": "Llave de paso 1/2 pulg. SINTÉTICO",
+              "status": "PUBLISHED",
+              "unit": "piece",
+              "increment": "1",
+              "min_quantity": "1",
+              "supplier_code": "PROV-FICT-0701",
+              "attributes": [{"code": "diametro-nominal", "value": "0.5", "unit": "in", "published": true}]
+            }
+          ]
+        },
+        {
+          "external_id": "P1-PROD-009",
+          "name": "Candado de latón SINTÉTICO (descontinuado)",
+          "description": "Producto SINTÉTICO de demostración archivado: no debe aparecer en el catálogo público.",
+          "status": "ARCHIVED",
+          "brand": "gamma-ficticia",
+          "category": "cerrajeria",
+          "attributes": [],
+          "media": [],
+          "variants": [
+            {
+              "sku": "SIN-CAN-40",
+              "name": "Candado 40 mm SINTÉTICO",
+              "status": "ARCHIVED",
+              "unit": "piece",
+              "increment": "1",
+              "min_quantity": "1",
+              "supplier_code": "PROV-FICT-0801"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "otra-ferreteria-sintetica",
+      "name": "Otra Ferretería (SINTÉTICO)",
+      "branches": [
+        {"code": "unica", "name": "Sucursal Única (SINTÉTICO)"}
+      ],
+      "demo_users": [
+        {"email": "admin.otra@example.test", "full_name": "Administración Otra (SINTÉTICO)", "role": "ADMIN"}
+      ],
+      "brands": [
+        {"slug": "delta-ficticia", "name": "Marca Delta (SINTÉTICO)"}
+      ],
+      "categories": [
+        {"slug": "tornilleria", "name": "Tornillería (SINTÉTICO)"}
+      ],
+      "attribute_definitions": [
+        {"code": "material", "name": "Material", "value_type": "TEXT"}
+      ],
+      "products": [
+        {
+          "external_id": "P1-OTRA-PROD-001",
+          "name": "Tornillo de otra ferretería SINTÉTICO",
+          "description": "Producto SINTÉTICO de una segunda organización ficticia; comparte un SKU con la organización demo.",
+          "status": "PUBLISHED",
+          "brand": "delta-ficticia",
+          "category": "tornilleria",
+          "attributes": [{"code": "material", "value": "Acero negro", "published": true}],
+          "media": [],
+          "variants": [
+            {
+              "sku": "SIN-TOR-8X1",
+              "name": "Tornillo 8 x 1 pulg. de otra ferretería SINTÉTICO",
+              "status": "PUBLISHED",
+              "unit": "piece",
+              "increment": "1",
+              "min_quantity": "1",
+              "supplier_code": "OTRO-FICT-0001"
+            }
+          ]
+        },
+        {
+          "external_id": "P1-OTRA-PROD-002",
+          "name": "Martillo de otra ferretería SINTÉTICO (borrador)",
+          "description": "Producto SINTÉTICO en borrador de la segunda organización ficticia.",
+          "status": "DRAFT",
+          "brand": "delta-ficticia",
+          "category": "tornilleria",
+          "attributes": [],
+          "media": [],
+          "variants": [
+            {
+              "sku": "SIN-MAR-16",
+              "name": "Martillo 16 oz SINTÉTICO",
+              "status": "DRAFT",
+              "unit": "piece",
+              "increment": "1",
+              "min_quantity": "1",
+              "supplier_code": "OTRO-FICT-0002"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

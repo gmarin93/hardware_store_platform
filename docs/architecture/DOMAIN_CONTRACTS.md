@@ -1,25 +1,39 @@
 # Proposed domain, API and AI contracts
 
-All endpoints, entities and status codes below are proposals; none is verified as implemented. P0 freezes them, P1 exports DRF OpenAPI, and later slices update both schema and client with review.
+All endpoints, entities and status codes below are proposals; none is verified as implemented. P1 exports DRF OpenAPI, and later slices update both schema and client with review.
+
+**P1 contract rev 0.1.0** is frozen in [ADR 0001](decisions/0001-technical-defaults.md): roles and scope mechanism, 401/403/404 policy, error envelope, pagination, session/CSRF/cache rules, catalog public/staff field split and unit model. Where this document and ADR 0001 differ for P1, ADR 0001 wins. P1 ships no price or availability fields or endpoints. Sections on inventory, pricing, quotations, orders and AI remain proposals until their phase plan freezes them.
 
 ## Authorization matrix
 
 Every action uses authenticated actor, organization and permitted branch context derived by the server. Client-supplied branch IDs are selectors, never grants. A customer owns only their own quotes/conversations; staff access is limited to assigned branches. Admin is not permission to bypass organization isolation.
 
-| Action | Guest | Customer | Sales | Warehouse | Manager/Admin |
-| --- | --- | --- | --- | --- | --- |
-| Published catalog and approved public availability | Yes | Yes | Yes | Yes | Yes |
-| Create/read own quote request | No | Own | Scoped customer workflow | No | Scoped |
-| Issue quote / convert accepted quote | No | No | Scoped | No | Scoped |
-| Accept issued quote | No | Own | Recorded customer consent | No | Recorded consent |
-| View exact internal stock | No by default | No by default | Scoped | Scoped | Scoped |
-| Adjust stock / manage prices | No | No | No | Report discrepancy only | Granted action + reason |
-| Start picking / fulfill | No | No | No by default | Scoped | Granted action |
-| Cancel before picking | No | No | Scoped | No by default | Scoped |
-| Cancel during picking | No | No | No | Explicit unpick + permission | Explicit unpick + permission |
-| Manage roles / audit | No | No | No | No | Explicit administrative permission |
+| Action | Guest | Customer | Employee | Admin |
+| --- | --- | --- | --- | --- |
+| Published catalog and approved public availability | Yes | Yes | Yes | Yes |
+| Staff catalog fields (provenance, unpublished records) | No | No | Assigned branches' organization | Yes |
+| Create/read own quote request | No | Own | Scoped customer workflow | Yes (organization) |
+| Issue quote / convert accepted quote | No | No | Scoped | Yes |
+| Accept issued quote | No | Own | Recorded customer consent | Recorded customer consent |
+| View exact internal stock | No by default | No by default | Scoped | Yes |
+| Report stock discrepancy | No | No | Scoped | Yes |
+| Adjust stock / manage prices | No | No | No | Yes, with reason and audit |
+| Start picking / fulfill | No | No | Scoped | Yes |
+| Cancel before picking | No | No | Scoped | Yes |
+| Cancel during picking | No | No | Scoped, explicit unpick | Yes, explicit unpick |
+| Manage staff, branches and memberships; view audit | No | No | No | Yes |
 
-Sales and warehouse memberships may coexist. AI tools inherit the caller's effective permissions, never an employee service-account privilege. Future roles require a matrix update and direct API tests.
+Owner-confirmed role set (D11, 2026-10-21): **GUEST, CUSTOMER, EMPLOYEE, ADMIN**.
+
+- GUEST is the unauthenticated principal, not a stored role. It sees only published catalog fields and business-approved public availability.
+- CUSTOMER: authenticated customer account (`CustomerProfile`) of the organization, no branch. Sees only their own quotes, orders and conversations.
+- EMPLOYEE: staff with one or more `BranchMembership(user, branch)` rows. "Scoped" means only branches where the employee has an active membership. One role covers sales and warehouse work; there is no separate sales/warehouse/manager tier.
+- ADMIN: organization-level `RoleAssignment` covering every branch of the one business. Admin is never cross-organization.
+- Services check named permission codes (e.g. `catalog.view_staff_fields`, `inventory.adjust`) that each role grants by default. Splitting EMPLOYEE later (e.g. warehouse-only staff) is an additive permission change plus matrix update and direct API tests; it needs no data migration of existing memberships.
+- Superuser status is not a business role.
+- Consequence of the merged EMPLOYEE role: any employee at a branch can issue quotes, convert, pick and fulfill there, so there is no separation of duties between selling and dispatching. Every transition records the actor in audit.
+
+AI tools inherit the caller's effective permissions, never an employee service-account privilege. Future roles require a matrix update and direct API tests.
 
 ## Catalog, units and prices
 
@@ -27,7 +41,7 @@ A Product is a family; a Variant is a sellable SKU. Do not merge distinct dimens
 
 Use decimal money internally and strings in APIs. A price includes currency, source, validity and explicit tax basis. Freeze rounding scale/mode, line-versus-document rounding and tax-inclusive/exclusive policy before monetary calculations ship. No production tax rate is assumed. Synthetic tax fixtures must be labeled non-production.
 
-Scraped/imported public prices and stock are staging observations only. Publication to authoritative prices requires authorized validation; stock requires a designated inventory authority. Manager-entered opening stock is a possible source, not proof that a real store has supplied it.
+Scraped/imported public prices and stock are staging observations only. Publication to authoritative prices requires authorized validation; stock requires a designated inventory authority. Admin-entered opening stock is a possible source, not proof that a real store has supplied it.
 
 ## Inventory truth and transactions
 
@@ -55,15 +69,15 @@ Order states: CONFIRMED → PICKING → FULFILLED. CONFIRMED may become CANCELLE
 
 ## Proposed API surface
 
-Prefix: `/api/v1`. UUID identifiers; ISO-8601 UTC timestamps; decimal strings. Stable cursor pagination with deterministic ordering. Error envelope: `{code, message, field_errors, request_id}`. Sensitive existence checks should avoid enumeration. Freeze exact 401/403/404 behavior with the authentication implementation.
+Prefix: `/api/v1`. UUID identifiers; ISO-8601 UTC timestamps; decimal strings. Stable cursor pagination with deterministic ordering. Error envelope: `{code, message, field_errors, request_id}`. Sensitive existence checks should avoid enumeration. Exact 401/403/404 behavior is frozen in ADR 0001.
 
 | Method/path | Service and behavior |
 | --- | --- |
 | GET /auth/csrf; POST /auth/login; POST /auth/logout; GET /auth/me | CSRF-safe sessions and effective permissions |
 | GET /branches | Only visible branches |
-| GET /catalog/products; GET /catalog/variants/{id} | Published/permitted fields, exact/fuzzy search and filters |
+| GET /catalog/products; GET /catalog/products/{id}; GET /catalog/variants/{id}; GET /catalog/variants?sku= | Published/permitted fields; exact SKU in P1, fuzzy search in P2 |
 | GET /inventory/availability?branch_id=…&variant_ids=… | Batched scoped truth; public fields redacted |
-| POST /inventory/adjustments | Manager permission, reason, idempotency and audit |
+| POST /inventory/adjustments | Admin permission, reason, idempotency and audit |
 | POST /quotes; GET /quotes; GET /quotes/{id} | Own/scoped drafts and requests |
 | POST /quotes/{id}/issue | Freeze version and validate price authority |
 | POST /quotes/{id}/accept | Accept specified current version, consent recorded |

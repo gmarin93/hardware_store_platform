@@ -19,6 +19,10 @@ These are design risks for a new system, not vulnerabilities found in an existin
 | Private information in logs/provider traces | High | Minimal context, redaction, retention and access controls | ai-copilot + runtime-engineer |
 | Backup exists but cannot restore | High | Restore rehearsal and reconciled stock audit | runtime-engineer + quality-engineer |
 | Full scope consumes excessive budget | Medium | Phase-scoped tasks; two implementation workers; measured AI budgets | Coordinator |
+| Private SSR/fetch response cached across users | Critical | ADR 0001 cache rules; two-user cache-leak test through the real Compose proxy (P1-03/P1-04) | nextjs-ui + quality-engineer |
+| Proxy routes admin or arbitrary upstream paths | High | Fixed upstream, `/api/v1/*` only, admin unmounted; proxy reachability test (P1-04) | runtime-engineer |
+| Default credentials or committed secrets | High | Placeholder `.env.example`, startup refusal, generated demo passwords (P1-01) | runtime-engineer |
+| No Claude permission deny rules; prose-only secret/network bans | High | Owner decision D21 | Owner + coordinator |
 | Agent rules treated as a sandbox | High | Tool allowlists, standard permission system and independent review; no bypass flags | Coordinator |
 
 Critical findings block the affected release. Track actual findings with file/evidence, exploit or failure scenario, owner and resolution; do not mark hypothetical risks “fixed” without evidence.

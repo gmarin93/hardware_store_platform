@@ -8,6 +8,12 @@ The owner confirmed the target as `/Users/glenmarin/Documents/Development/hardwa
 
 Claude Code is installed locally as version 2.1.283. The neighboring Powerhouse project is unrelated and must not be used as an existing hardware-store implementation.
 
+## Phase 0 re-inspection (2026-10-21, /hardware-plan 0)
+
+Re-verified in a fresh Claude session. Working tree clean on `main`; one commit `b38f1d7` (the planning package, 30 files) tracking `origin/main` at `github.com/gmarin93/hardware_store_platform`. No fetch was performed. Tracked content: `CLAUDE.md`, `README.md`, `.gitignore`, `docs/`, `.claude/agents/` (8), `.claude/skills/` (3). Absent: application source, manifests, lockfiles, Compose files, migrations, tests, source data, catalog/price/stock feeds, external integrations, CI workflows, `.claude/settings.json`. The parent directory contains only this repository. Classification: **planning package only; bootstrap required.**
+
+Local toolchain (version output only, nothing installed): Python 3.13.0, uv 0.11.28, Node v20.19.2, npm 10.8.2, Docker 29.2.1, Homebrew psql client 14.13; pnpm absent.
+
 ## What to retain from the source
 
 Keep the modular Django backend, typed Next.js frontend, inventory authority distinction, Costa Rican vocabulary, provenance, branch permissions, transactional reservations, validated AI references and concrete safety evaluations. These are strong foundations.
@@ -33,7 +39,7 @@ Status is application implementation status at inspection, not documentation com
 
 | Requirement | Status | Delivery |
 | --- | --- | --- |
-| Architecture and decision package | PARTIAL | This draft; Phase 0 validates defaults |
+| Architecture and decision package | PARTIAL | Phase 0: ADR 0001 freezes technical defaults and P1 contract rev 0.1.0; business decisions open |
 | Next.js/Django/Postgres runtime | MISSING | P1 |
 | Authentication and branch/object permissions | MISSING | P1 |
 | Canonical catalog, variants and units | MISSING | P1 |
@@ -49,8 +55,10 @@ Status is application implementation status at inspection, not documentation com
 | Semantic retrieval and photo interpretation | MISSING | Optional P6, evidence-driven |
 | Real dataset rights, price feed and stock feed | MISSING | No sources supplied; production blocker |
 | Payment gateway/processing | EXCLUDED | Explicit owner request |
+| Customer onboarding/registration | MISSING | Not in source; D19, before P3 |
+| CI/CD | MISSING | Not planned for MVP; requires explicit review |
 
-No existing implementation was assessed as COMPLETE or UNSAFE because none exists locally. Proposed risks are in the risk register, not claims about found vulnerabilities.
+No existing implementation was assessed as COMPLETE or UNSAFE because none exists locally (re-confirmed in Phase 0). Proposed risks are in the risk register, not claims about found vulnerabilities.
 
 ## Initial deliverables mapping
 

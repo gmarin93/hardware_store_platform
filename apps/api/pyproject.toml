@@ -1,0 +1,53 @@
+[project]
+name = "hardware-store-api"
+version = "0.1.0"
+description = "Django/DRF API for the hardware-store operations platform"
+requires-python = "==3.13.*"
+dependencies = [
+    "Django==6.0.9",
+    "djangorestframework==3.17.2",
+    "drf-spectacular==0.30.0",
+    "psycopg[binary]==3.3.6",
+    "gunicorn==26.2.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest==9.1.1",
+    "pytest-django==4.14.0",
+    "ruff==0.17.1",
+    "mypy==2.3.1",
+    "django-stubs==6.0.9",
+    "djangorestframework-stubs==3.17.1",
+]
+
+[tool.uv]
+package = false
+# Keep the stubs runtime helper on the same series as django-stubs 6.0.x.
+constraint-dependencies = ["django-stubs-ext==6.0.9"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+python_files = ["test_*.py"]
+addopts = "--strict-markers --strict-config -p no:cacheprovider"
+filterwarnings = ["error"]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+extend-exclude = ["**/migrations/**"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "DJ", "S", "SIM", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["S101", "S603"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
+exclude = ["(^|/)migrations/"]
+
+[tool.django-stubs]
+django_settings_module = "config.settings.test"

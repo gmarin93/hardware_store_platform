@@ -4,7 +4,7 @@ Build a hardware-store operations platform with Next.js, Django/DRF, PostgreSQL 
 
 ## Start here
 
-Read `docs/README.md`, then `docs/planning/STATUS.md` and the requested task in `docs/planning/tasks.json`. Inspect the actual repository before planning changes. At package creation the repository contained only Git metadata; these documents are a blueprint, not a working application.
+Read `docs/README.md`, then `docs/planning/STATUS.md` and the requested task in `docs/planning/tasks.json`. Inspect the actual repository before planning changes. At package creation the repository contained only Git metadata. Local foundation work now exists; inspect current source and evidence rather than treating historical planning notes as implementation status.
 
 The main Claude session is the coordinator. Delegate substantial implementation to the named specialists in `.claude/agents/`; keep integration, task scheduling and the task ledger in the main session. See `docs/ORCHESTRATION.md`. Do not treat a request to analyze or plan as permission to implement.
 
@@ -37,5 +37,13 @@ Record actual commands, exit results and limitations in task evidence. A skipped
 - `/hardware-plan 0`: inspect and refresh the Phase 0 plan.
 - `/hardware-build 1`: implement only the requested phase, after prerequisite gates pass.
 - `/hardware-review 1`: verify the requested phase and report evidence.
+- `/hardware-ticket HAR-88 plan`: inspect a Linear ticket and save a local plan.
+- `/hardware-ticket HAR-88`: implement only the ticket's eligible authorized scope.
 
 These are instructions executed by Claude within the active session, not a background scheduler or a security sandbox. Agent tool allowlists limit available tools; prose rules and file ownership still require review.
+
+## Linear ticket implementation
+
+The primary /hardware-ticket HAR-N command reads Linear. Add plan for analysis/local planning documents only. The optional local plugin exposes /hardware-linear:ticket with the same workflow and a read-only Linear MCP definition. Read docs/workflows/LINEAR_TICKET_WORKFLOW.md, docs/integrations/LINEAR_SETUP.md and LINEAR_PROJECT.json. Verify immutable issue/team/project identity, preserve current prerequisite evidence and never expand a parent issue into every child without explicit scope. Claude needs its own authentication; Codex connectivity is not shared automatically.
+
+Load required project skills in the main session before delegation; HAR-88 requires frontend-design. Specialists receive bounded local context and exclusive paths. No automatic Linear mutations, publishing or deployment. The legacy /hardware-jira:ticket plugin remains explicitly tied to docs/workflows/JIRA_TICKET_WORKFLOW.md; it is not the primary command.

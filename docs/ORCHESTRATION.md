@@ -22,7 +22,7 @@ Models inherit the main session's selection. Eight roles do not mean eight simul
 ## Dispatch protocol
 
 1. Recheck Git status and preserve unrelated work. Read STATUS.md, the relevant task and its dependencies.
-2. Determine actual user-authorized scope. A plan request permits documentation only. An explicit build request or /hardware-build N permits local implementation of phase N, not production changes or later phases.
+2. Determine actual user-authorized scope. A plan request permits documentation only. An explicit build request or /hardware-build N permits local implementation of phase N, not production changes or later phases. A direct ticket implementation request or /hardware-ticket KEY permits only that ticket's eligible local slice; its phase/decision prerequisites still apply.
 3. Resolve the relevant decision blockers and freeze the API/entity contract. Do not invent integrations or treat synthetic data as authoritative.
 4. Give the worker the assignment format below. Mark its task in_progress and record exclusive paths.
 5. Wait for the worker result before integrating dependent work. Review changed files, run relevant actual checks, and invoke security-reviewer for auth, inventory, imports or AI trust boundaries.
@@ -62,6 +62,18 @@ A user may ask for all MVP phases, but required business decisions, execution pe
 
 Project agents use Markdown/YAML definitions and explicit tool allowlists. See [Anthropic's subagent documentation](https://code.claude.com/docs/en/sub-agents).
 
-Project skills create the three slash commands and accept phase text through $ARGUMENTS. See [Anthropic's skills documentation](https://code.claude.com/docs/en/skills).
+Project skills provide the phase and ticket commands, accepting selectors through $ARGUMENTS. See [Anthropic's skills documentation](https://code.claude.com/docs/en/skills).
 
 This package uses normal Claude permissions. It includes no bypass flags, hooks, hidden startup commands or always-on multi-agent loops. File ownership is a coordination rule, not filesystem isolation; scrutinize worker diffs.
+
+## Implementing a Linear ticket
+
+The primary /hardware-ticket HAR-N command and optional /hardware-linear:ticket HAR-N plugin use [the shared Linear workflow](workflows/LINEAR_TICKET_WORKFLOW.md). Add plan for analysis/local planning documents only. The main session uses its own authenticated Linear tools, verifies [project/immutable identity](integrations/LINEAR_PROJECT.json), reads actual blockers and gives workers a minimal local snapshot. Evidence lives under docs/tickets/linear/ with provider/issue binding and preserved aliases/history.
+
+A sprint parent is a planning container, not a dated cycle or implicit authorization to implement all children. Verify local prerequisite evidence even when Linear says Done. Load issue-required skills in the coordinator; for HAR-88 this is frontend-design, whose guidance is handed to nextjs-ui. Workers do not automatically inherit every skill or external tool.
+
+The shipped plugin connection is read-only. Local DONE does not change Linear status; no comments, transitions, assignments or other remote mutations occur automatically. See [the developer guide](DEVELOPER_GUIDE.md) and [Linear setup](integrations/LINEAR_SETUP.md). No authenticated Claude run is implied by static plugin validation.
+
+## Legacy Jira
+
+The /hardware-jira:ticket plugin remains tied to [the legacy workflow](workflows/JIRA_TICKET_WORKFLOW.md) and [Jira setup](integrations/JIRA_SETUP.md). It is separate from the primary Linear command; preserve previous Jira evidence.

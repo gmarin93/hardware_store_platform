@@ -6,11 +6,11 @@ Implement small vertical slices and preserve every completed gate. A task is eli
 
 P0-01 → P0-02. Recheck the actual repository, source data, architecture and scope. Record framework/version selection method, role matrix, stock/quotation/order states and data authority. Resolve reversible technical choices; identify business decisions that block only real-data use.
 
-Exit: accurate inventory, requirements matrix, architecture, contract draft, risk register and decision ledger. Empty repository means bootstrap; unexpected existing code means adapt the plan. Draft documents alone do not complete this gate.
+Exit: accurate inventory, requirements matrix, architecture, contract draft, risk register and decision ledger. Status 2026-10-21: P0-01 and P0-02 done; owner confirmed D02/D03/D10/D11. P1-01 waits on network authorization D20. Empty repository means bootstrap; unexpected existing code means adapt the plan. Draft documents alone do not complete this gate.
 
 ## P1 — Foundation and a catalog vertical slice
 
-P1-01 → P1-02 → P1-03 → P1-04. Establish pinned runtimes and reproducible local Compose, Django auth/CSRF, branch membership, canonical variants and API schema. Connect typed Next.js catalog views with labeled synthetic fixtures.
+P1-01 → P1-02A → P1-02B → P1-03 → P1-04 (serial; contract rev 0.1.0 in ADR 0001). Establish pinned runtimes and reproducible local Compose, Django auth/CSRF, branch membership, canonical variants and API schema. Connect typed Next.js catalog views with labeled synthetic fixtures.
 
 Exit: services start; migrations apply from empty Postgres; actual API and browser journey pass; unauthorized access and private-cache cases fail safely. Record verified commands under docs/development/CHECKS.md. No blanket test command is claimed before project scripts exist.
 

@@ -1,0 +1,8 @@
+{
+  "name": "hardware-linear",
+  "description": "Read Linear HAR tickets and coordinate scoped local work through the hardware-store project's existing Claude agents and shared workflow.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Hardware Store Platform contributors"
+  }
+}

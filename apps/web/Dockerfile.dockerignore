@@ -1,0 +1,14 @@
+**/node_modules
+**/.next
+**/.env
+**/.env.*
+.git
+.claude
+docs
+apps/api
+infra
+scripts
+tools
+playwright-report
+test-results
+coverage

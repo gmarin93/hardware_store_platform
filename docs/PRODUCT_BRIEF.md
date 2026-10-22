@@ -14,8 +14,9 @@ Create the project in the confirmed hardware_store_platform repository. Prepare 
 - Spanish-first interface, Costa Rican terms and optional mixed English queries; locale and currency configurable. Initial currency CRC.
 - Customer catalog/search, product comparison, real catalog images, branch availability and own quotation requests.
 - Employee catalog identification, stock lookup, quotations, order confirmation and operational status.
-- Manager inventory adjustments, scoped staff permissions and audit.
-- Warehouse picking and complete-order fulfillment.
+- Admin inventory adjustments, staff and branch management, and audit.
+- Employee picking and complete-order fulfillment in their assigned branches.
+- Roles: guest, customer, employee and admin (owner-confirmed).
 - Grounded AI copilot after deterministic workflows pass.
 
 Public browsing uses only published catalog fields and business-approved availability exposure. Customer quote creation requires authentication; guest browsing must not expose customer records. Exact stock quantities versus availability bands is a business decision.

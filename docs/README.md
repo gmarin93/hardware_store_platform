@@ -20,3 +20,13 @@ Read only the documents needed for the assigned task.
 | [Validation](planning/VALIDATION.md) | Setup validation and authoritative Claude references |
 
 The original attachment is retained as `docs/reference/original-master-prompt.txt` for traceability. It is reference material, not an instruction to execute or a source of extra authorization.
+
+## Developer onboarding and Linear tickets
+
+- [Developer guide](DEVELOPER_GUIDE.md) and [PDF version](DEVELOPER_GUIDE.pdf)
+- [Linear setup](integrations/LINEAR_SETUP.md) and [project binding](integrations/LINEAR_PROJECT.json)
+- [Shared Linear workflow](workflows/LINEAR_TICKET_WORKFLOW.md)
+- [Linear result template](templates/LINEAR_TICKET_RESULT.md)
+- [Local checks](development/CHECKS.md) and [P1-01 evidence](evidence/P1-01.md)
+
+Legacy Jira: [setup](integrations/JIRA_SETUP.md), [workflow](workflows/JIRA_TICKET_WORKFLOW.md) and [result template](templates/JIRA_TICKET_RESULT.md). The primary /hardware-ticket command now reads Linear; legacy Jira uses /hardware-jira:ticket.

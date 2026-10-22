@@ -1,0 +1,20 @@
+{
+  "name": "@hardware-store/api-client",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Typed client for contracts/openapi.yaml: generated openapi-typescript types plus a thin openapi-fetch wrapper. No business rules.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "generate": "node scripts/generate.mjs",
+    "check": "node scripts/generate.mjs --check"
+  },
+  "dependencies": {
+    "openapi-fetch": "0.17.0"
+  },
+  "devDependencies": {
+    "openapi-typescript": "7.13.0"
+  }
+}

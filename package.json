@@ -1,0 +1,26 @@
+{
+  "name": "hardware-store-platform",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "npm@11.19.1",
+  "engines": {
+    "node": ">=24.22.1 <25"
+  },
+  "workspaces": [
+    "apps/web",
+    "packages/api-client",
+    "tests/e2e"
+  ],
+  "scripts": {
+    "web:lint": "npm run lint --workspace apps/web",
+    "web:typecheck": "npm run typecheck --workspace apps/web",
+    "web:test": "npm run test --workspace apps/web",
+    "web:build": "npm run build --workspace apps/web",
+    "api-client:generate": "npm run generate --workspace packages/api-client",
+    "api-client:check": "npm run check --workspace packages/api-client",
+    "web:cache-leak": "npm run cache-leak --workspace apps/web"
+  },
+  "overrides": {
+    "eslint": "10.13.0"
+  }
+}

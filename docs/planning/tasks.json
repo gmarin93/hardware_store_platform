@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "project": "hardware_store_platform",
-  "implementation_authorization": "none; planning/setup only so far",
+  "implementation_authorization": "Phase 1 local implementation authorized by owner via /hardware-build 1 on 2026-10-21, with D20 network scope. Later phases not authorized.",
   "coordination": {
     "max_concurrent_implementation_workers": 2,
     "ledger_writer": "main Claude session",
@@ -29,9 +29,14 @@
         "Classify actual local implementation; preserve existing work",
         "Map every source requirement to implemented, missing, deferred or excluded status"
       ],
-      "status": "pending",
+      "status": "done",
       "active_owner": null,
-      "evidence": [],
+      "evidence": [
+        "2026-10-21 coordinator inspection: git status clean on main; single commit b38f1d7 (planning package, 30 files) tracking origin/main; no fetch",
+        "find over tracked tree: no application source, manifests, lockfiles, compose, migrations, tests, data, integrations, CI or .claude/settings.json",
+        "Toolchain version output only: Python 3.13.0, uv 0.11.28, Node v20.19.2, npm 10.8.2, Docker 29.2.1, psql 14.13; pnpm absent",
+        "platform-architect read-only review returned; matrix updated in PROMPT_REVIEW.md (Phase 0 re-inspection section)"
+      ],
       "blockers": []
     },
     {
@@ -43,22 +48,30 @@
         "P0-01"
       ],
       "suggested_write_scope": [
+        "docs/architecture/decisions/0001-technical-defaults.md",
         "docs/architecture/DOMAIN_CONTRACTS.md",
-        "docs/planning/DECISIONS.md"
+        "docs/architecture/ARCHITECTURE.md",
+        "docs/planning/DECISIONS.md",
+        "docs/planning/RISKS.md"
       ],
       "acceptance": [
         "Record technical defaults and unresolved business-source decisions",
         "Freeze role matrix, lifecycles, authority and contract version for P1"
       ],
-      "status": "pending",
+      "status": "done",
       "active_owner": null,
-      "evidence": [],
+      "evidence": [
+        "ADR 0001 written: tooling, version method, proxy/session/CSRF/cache, admin exposure, secrets, roles/scope, 401/403/404, envelope, pagination, catalog field split, units, synthetic fixtures",
+        "platform-architect and security-reviewer findings incorporated; DECISIONS.md statuses updated (D19-D22 added)",
+        "2026-10-21 owner confirmed D02 one business/multiple branches, D03 Spanish first, D10 Django sessions with CSRF, D11 roles admin/employee/customer/guest; ADR 0001 accepted; DOMAIN_CONTRACTS role matrix rewritten for four roles",
+        "Remaining open items (D20 network, D21 permission hardening, D22 Node) are P1-01 prerequisites, not P0-02 acceptance"
+      ],
       "blockers": []
     },
     {
       "id": "P1-01",
       "phase": 1,
-      "title": "Create pinned local runtime and check commands",
+      "title": "Create pinned local runtime, proxy and check commands",
       "owner": "runtime-engineer",
       "depends_on": [
         "P0-02"
@@ -66,45 +79,152 @@
       "suggested_write_scope": [
         "compose.yaml",
         "infra/local/",
-        "apps/api/config/",
         "apps/api/pyproject.toml",
         "apps/api/uv.lock",
+        "apps/api/manage.py",
+        "apps/api/config/",
+        "apps/api/Dockerfile",
+        ".python-version",
+        ".nvmrc",
+        "package.json",
+        "package-lock.json",
         "apps/web/package.json",
-        "apps/web/package-lock.json"
+        "apps/web/next.config.*",
+        "apps/web/tsconfig.json",
+        "apps/web/eslint.config.*",
+        "apps/web/src/app/layout.tsx",
+        "apps/web/src/app/page.tsx",
+        ".env.example",
+        ".gitignore",
+        "docs/development/CHECKS.md",
+        "docs/architecture/decisions/0002-versions.md",
+        "docs/evidence/P1-01.md"
+      ],
+      "handoffs": [
+        "apps/api/config/ settings pass to P1-02A when P1-01 is done",
+        "apps/web placeholder layout/page pass to P1-03"
       ],
       "acceptance": [
-        "Compatible exact versions and lockfiles recorded",
-        "Web, API and Postgres start locally; health checks pass",
-        "Record actual lint/typecheck/test/build commands in docs/development/CHECKS.md"
+        "Exact versions chosen by ADR 0001 method, sources recorded in ADR 0002; lockfiles committed (single root package-lock.json, apps/api/uv.lock)",
+        "npm workspaces declare apps/web, packages/api-client, tests/e2e",
+        "docker compose up --wait starts proxy, web, api and Postgres; health checks pass through the single proxy origin",
+        "Proxy routes only /api/v1/* to fixed Django upstream; Django admin not mounted or routed; Postgres unpublished or bound to 127.0.0.1",
+        "Only synthetic .env.example; settings refuse DEBUG-off with placeholder SECRET_KEY; no seeded superuser or committed passwords",
+        "DB health check is connectivity only; no migrations run before custom AUTH_USER_MODEL exists",
+        "Node runtime suitability verified (D22) and recorded",
+        "Actual lint/format/typecheck/test/build commands recorded in docs/development/CHECKS.md and each executed once with exit status"
       ],
-      "status": "pending",
+      "validation": "Run every command recorded in CHECKS.md; docker compose up --wait with a disposable project name; curl health through proxy; record outputs in docs/evidence/P1-01.md",
+      "rollback": "Additive; revert commit and docker compose down -v on the disposable project only. No shared data exists.",
+      "requires_decisions": [
+        "D20",
+        "D22"
+      ],
+      "status": "done",
       "active_owner": null,
-      "evidence": [],
+      "evidence": [
+        "docs/evidence/P1-01.md: worker executed all 21 CHECKS.md commands, exit 0",
+        "Coordinator re-run 2026-10-21 (project hwcoord): uv lock --check, ruff check/format, mypy exit 0; compose up --build --wait exit 0; pytest 11 passed on Postgres 18.6; /api/v1/health 200 via proxy; /api/v1/admin/ 404; /admin/ -> Next 308 -> 404; foreign Host 400; db port unpublished; web lint/typecheck/test exit 0; down -v clean",
+        "D22 resolved: host Node 20 EOL and below vitest minimum; web tooling runs in pinned node:24.22.1 container (infra/local/node.sh)",
+        "Versions and sources: docs/architecture/decisions/0002-versions.md",
+        "Security review 2026-10-21: no blockers. Fixes routed to runtime-engineer: Caddy access log must drop X-CSRFToken (medium); api dockerignore **/.env (low). Remaining findings assigned to P1-02A, P1-03 and P5-01",
+        "Security fixes verified 2026-10-21: worker canary test (X-CSRFToken/cookie canaries 0 occurrences in proxy logs, control header present), nested .env probe absent from api image; coordinator caddy validate 'Valid configuration' and reviewed Caddyfile/dockerignore diff"
+      ],
       "blockers": []
     },
     {
-      "id": "P1-02",
+      "id": "P1-02A",
       "phase": 1,
-      "title": "Implement identity, branch scope and catalog API",
+      "title": "Implement identity, organization/branch scope and API conventions",
       "owner": "django-domain",
       "depends_on": [
         "P1-01"
       ],
       "suggested_write_scope": [
+        "apps/api/common/",
         "apps/api/accounts/",
         "apps/api/organizations/",
-        "apps/api/catalog/",
-        "apps/api/audit/",
-        "contracts/openapi.yaml"
+        "apps/api/config/settings*",
+        "apps/api/config/urls.py",
+        "apps/api/tests/ (accounts, organizations, common)",
+        "docs/architecture/decisions/0003-auth-errors.md",
+        "docs/evidence/P1-02A.md"
       ],
       "acceptance": [
-        "Migrations apply on empty Postgres",
-        "Session/CSRF and direct unauthorized object requests tested",
-        "Variant units and published/private catalog fields tested"
+        "Custom user model and first migrations apply on empty Postgres (disposable compose project)",
+        "GET /auth/csrf, POST /auth/login, POST /auth/logout (POST-only), GET /auth/me with effective permissions",
+        "CSRF negatives: missing token or foreign Origin -> 403 CSRF_FAILED on login, logout and unsafe requests; session cookie alone insufficient",
+        "Session key rotates on login, flushed on logout; login throttled (429); uniform INVALID_CREDENTIALS",
+        "Unauthenticated protected request -> 401 NOT_AUTHENTICATED; out-of-scope object and invisible branch selector -> 404 identical to nonexistent UUID; visible-but-forbidden -> 403",
+        "Role tests for GUEST, CUSTOMER, EMPLOYEE and ADMIN: employee limited to active member branches; admin covers all branches of its organization only; customer limited to own records; guest only published data",
+        "Scope from active memberships via scoped selectors; forged branch_id grants nothing; revoked membership/deactivated user denied on next request; superuser not cross-org",
+        "Second synthetic organization in fixtures; cross-org denial tested",
+        "Error envelope, X-Request-ID echo, cursor pagination with id tiebreak; authenticated responses carry Cache-Control private, no-store and Vary: Cookie",
+        "Cookies, CSRF tokens and passwords absent from logs (test)"
       ],
-      "status": "pending",
+      "validation": "pytest on Postgres, ruff, mypy per CHECKS.md; security-reviewer review of diff",
+      "rollback": "Additive until migrations exist; changing user model or IDs afterwards requires rebuilding local DB (acceptable only with synthetic data)",
+      "requires_decisions": [],
+      "status": "done",
       "active_owner": null,
-      "evidence": [],
+      "evidence": [
+        "docs/evidence/P1-02A.md: worker ran ruff/format/mypy, migrate on fresh volume, makemigrations --check, spectacular --validate --fail-on-warn, pytest 89 passed, live proxy curls",
+        "Coordinator re-run 2026-10-21 (hwcoord): host ruff/format/mypy (54 files) exit 0, uv lock --check ok; compose up 0; makemigrations --check 'No changes detected'; pytest 89 passed; spectacular validate exit 0; migrate on fresh DB OK; live: anon /auth/me 401 NOT_AUTHENTICATED es-CR envelope + WWW-Authenticate; GET logout 405; login without CSRF 403; down -v clean",
+        "Security review 2026-10-21: no blockers. Fix batch routed to django-domain: db.backends WARNING + DEBUG log test, 500 set_rollback, XFF trusted only from proxy, 404 header parity, CSRF Origin/rotation tests, csrf/500 log filters, ADR 0003 accepted risks",
+        "Fix batch verified 2026-10-21 (hwcoord): host ruff/format/mypy 56 files exit 0; compose config/up 0; makemigrations no changes; pytest 100 passed; spectacular validate 0; health 200; DJANGO_TRUSTED_PROXY_HOSTS reaches api. Coordinator integration: added DJANGO_DEFAULT_ORGANIZATION_SLUG and DJANGO_TRUSTED_PROXY_HOSTS to .env.example and compose x-django-env",
+        "Known limitations: 403 PERMISSION_DENIED proven via test-only probe until first real visible-but-forbidden endpoint; LocMem throttle per gunicorn worker (up to 2x rate)"
+      ],
+      "blockers": [],
+      "handoffs": [
+        "apps/api/config/settings* and urls.py pass to P1-02B (catalog app registration only) when P1-02A is done"
+      ],
+      "follow_ups": [
+        "Security review P1-01 #3: set django.db.backends logger to WARNING so SQL params (session keys, hashes) are never logged at DEBUG"
+      ],
+      "deferred_criteria": [
+        "'Customer limited to own records' and 'guest only published data' have no P1-02A endpoint; verified in P1-02B (catalog) and P3 (quotes/orders)"
+      ]
+    },
+    {
+      "id": "P1-02B",
+      "phase": 1,
+      "title": "Implement catalog models, public/staff API and synthetic seed",
+      "owner": "django-domain",
+      "depends_on": [
+        "P1-02A"
+      ],
+      "suggested_write_scope": [
+        "apps/api/catalog/",
+        "apps/api/tests/ (catalog)",
+        "tests/fixtures/synthetic/p1/",
+        "contracts/openapi.yaml",
+        "docs/evidence/P1-02B.md"
+      ],
+      "acceptance": [
+        "Product/Variant DRAFT/PUBLISHED/ARCHIVED; units enum, NUMERIC(14,3), increment > 0, min_quantity, sales_unit == stock_unit DB constraint; INVALID_QUANTITY_INCREMENT on non-multiples",
+        "GET /catalog/products, /catalog/products/{id}, /catalog/variants/{id}, /catalog/variants?sku= per ADR 0001",
+        "Public and staff serializers with exact key-set tests; guest cannot fetch unpublished product/variant by ID (404)",
+        "No price or availability fields or endpoints",
+        "seed_synthetic command refuses non-local settings; records flagged is_synthetic, fictitious names, example.test emails, demo passwords generated not committed",
+        "contracts/openapi.yaml exported with spectacular --validate --fail-on-warn; regenerate-and-diff clean; info.version 0.1.0",
+        "Public cursor_ordering uses only public fields (cursors are signed, not encrypted)",
+        "Seed command creates the default organization with DEFAULT_ORGANIZATION_SLUG"
+      ],
+      "validation": "pytest on Postgres, ruff, mypy, schema regenerate-and-diff per CHECKS.md",
+      "rollback": "Additive migrations; local DB rebuild acceptable while data is synthetic",
+      "requires_decisions": [
+        "D08"
+      ],
+      "status": "done",
+      "active_owner": null,
+      "evidence": [
+        "docs/evidence/P1-02B.md: worker 240 passed, seed idempotent and refuses DEBUG off, schema validate + regenerate-diff 0",
+        "Coordinator integration: INVALID_QUANTITY_INCREMENT moved into common/errors.py (no runtime registration); compose mounts tests/fixtures/synthetic read-only into api; CHECKS.md rows 23/25 simplified",
+        "Coordinator re-run 2026-10-21 (hwcoord): host ruff/format/mypy 81 files 0; makemigrations no changes; pytest 240 passed; spectacular validate 0 and regenerate-diff clean; migrate+seed 0; public product keys [brand,category,description,id,media,name]; staff endpoint anon 401; nonexistent product 404 envelope; schema contains no price/stock/availability fields (only stock_unit and HealthUnavailable); down -v clean",
+        "Security review 2026-10-21: no blockers. Hardening batch routed to django-domain: seed opt-in env + refuse with non-synthetic org, media URL regex, source_url https CHECK, hostname parse, TTY-only password output, clean SeedError on SKU move, stale comment",
+        "Hardening batch verified 2026-10-21 (hwcoordb, db only): host ruff/format/mypy 81 files 0; makemigrations no changes; pytest 256 passed; schema regenerate-diff unchanged; migrate 0001-0003 OK; seed without ALLOW_SYNTHETIC_SEED exit 1; seed --with-demo-users without TTY printed 0 passwords; down -v clean",
+        "Accepted local behavior: seed reuses @example.test accounts and reactivates synthetic roles; guard bypassable only with both DEBUG and ALLOW_SYNTHETIC_SEED on an empty DB (deployment hardening P5-01)"
+      ],
       "blockers": []
     },
     {
@@ -113,19 +233,28 @@
       "title": "Create typed client and accessible catalog shell",
       "owner": "nextjs-ui",
       "depends_on": [
-        "P1-02"
+        "P1-02B"
       ],
       "suggested_write_scope": [
         "packages/api-client/",
-        "apps/web/src/"
+        "apps/web/src/",
+        "apps/web/package.json (scripts only, dependency changes serialized through coordinator)",
+        "docs/evidence/P1-03.md"
       ],
       "acceptance": [
-        "Client conforms to exported schema",
-        "Catalog list/detail and session states use actual local API",
-        "No private server response cached across users"
+        "Client generated from contracts/openapi.yaml with openapi-typescript/openapi-fetch; generated output committed; regenerate-and-diff check",
+        "Catalog list, /catalog/[sku] detail via exact SKU filter, login/logout/account session states use actual local API through proxy",
+        "Public pages fetch anonymously; any cookie-bearing fetch is no-store; Set-Cookie only to originating response",
+        "Two-user sequential test: second user's HTML/RSC payload contains none of the first user's data",
+        "'Datos de demostración' banner visible with synthetic data; Spanish-first copy; keyboard and visible focus; loading/empty/error/unauthorized states",
+        "No price, availability or payment UI",
+        "Server fetch helper forwards only allowlisted session/CSRF cookies, never copies inbound headers such as X-Forwarded-*; tested (security review P1-01 #2)",
+        "Server fetch helper never logs in on users' behalf; frontend treats role GUEST on an authenticated session as signed-in without permissions, not anonymous"
       ],
-      "status": "pending",
-      "active_owner": null,
+      "validation": "eslint, tsc --noEmit, vitest, next build per CHECKS.md; focused browser check through proxy",
+      "rollback": "Additive frontend; revert commit",
+      "status": "in_progress",
+      "active_owner": "nextjs-ui",
       "evidence": [],
       "blockers": []
     },
@@ -142,10 +271,18 @@
         "docs/evidence/P1-04.md"
       ],
       "acceptance": [
-        "Customer and employee catalog journeys pass",
-        "No credential/real store fixtures",
-        "Reviewer findings resolved before phase completion"
+        "Guest, customer and employee catalog journeys pass in Playwright against real Compose proxy",
+        "Direct API calls bypassing UI denied (cross-branch, cross-org, ownership, unpublished)",
+        "CSRF negatives on login/logout and two-user cache-leak test executed through the proxy, not only Django test client",
+        "Admin path and non-/api/v1 upstream paths unreachable through proxy",
+        "No credential or real store fixtures; synthetic labeling visible",
+        "Security-reviewer findings resolved before phase completion",
+        "Evaluate npm ci --ignore-scripts with explicit rebuild allowlist; record decision (security review P1-01 #5); note 'api' Host accepted via proxy (#7)",
+        "QA dynamic: XFF spoof from web container does not bypass IP login throttle; Caddy overwrites client XFF; full-header parity of out-of-scope vs nonexistent 404",
+        "QA dynamic (P1-02B review): full-header 404 parity for staff product as other-org staff vs random vs malformed id; staff cursor replayed on public list returns only published rows; seed refuses with DEBUG off and without ALLOW_SYNTHETIC_SEED"
       ],
+      "validation": "Full CHECKS.md suite plus Playwright; record commands, exit codes and limitations",
+      "rollback": "Tests and evidence only",
       "status": "pending",
       "active_owner": null,
       "evidence": [],
@@ -188,7 +325,8 @@
       "acceptance": [
         "Exact SKU priority and Spanish synonyms verified",
         "Hard attribute constraints enforced",
-        "Golden synthetic candidate cases meet recorded recall target"
+        "Golden synthetic candidate cases meet recorded recall target",
+        "Relevance-ranked pagination uses (rank, id) cursor or bounded result set"
       ],
       "status": "pending",
       "active_owner": null,
@@ -211,7 +349,8 @@
       "acceptance": [
         "Search/filter/reset and empty/error states pass",
         "Real catalog references or visibly synthetic fixtures only",
-        "Import reports restricted to authorized staff"
+        "Import reports restricted to authorized staff",
+        "Staff UI renders SourceReference.source_url as text or validated https href (security review P1-02B #3); product detail variant list bounded if families grow"
       ],
       "status": "pending",
       "active_owner": null,
@@ -257,7 +396,9 @@
         "UNKNOWN distinct from verified zero",
         "Stock/source age and branch tests pass",
         "Concurrent Postgres allocation and adjustment invariants hold",
-        "Authorized release/expiry still succeeds when source freshness is unavailable"
+        "Authorized release/expiry still succeeds when source freshness is unavailable",
+        "Idempotency infrastructure and retention per ADR 0001 land here, before P3-03; D07 resolved or defaulted",
+        "Stock adjustment restricted to ADMIN unless D23 changes the employee duty split"
       ],
       "status": "pending",
       "active_owner": null,
@@ -333,7 +474,9 @@
       "status": "pending",
       "active_owner": null,
       "evidence": [],
-      "blockers": []
+      "blockers": [
+        "D19 customer onboarding decision before customer quote journeys"
+      ]
     },
     {
       "id": "P3-05",
@@ -462,7 +605,8 @@
       "acceptance": [
         "Staff-management and audit endpoints enforce role/branch scope",
         "Rate limits, retention and redacted diagnostics tested",
-        "Customer-facing schemas exclude internal costs and staff fields"
+        "Customer-facing schemas exclude internal costs and staff fields",
+        "Deployment-check task: refuse insecure cookies when not local, HSTS/SSL redirect defaults, manage.py check --deploy clean (security review P1-01 #4)"
       ],
       "status": "pending",
       "active_owner": null,
@@ -506,7 +650,8 @@
       "acceptance": [
         "Local backup restored and domain balances reconciled",
         "Recovery procedure and redacted diagnostics verified",
-        "No production deployment or paid resources created"
+        "No production deployment or paid resources created",
+        "Runtime api image excludes tests/probe URLconf (runtime-stage cleanup in apps/api/Dockerfile); shared throttle cache if multiple workers"
       ],
       "status": "pending",
       "active_owner": null,
@@ -556,5 +701,6 @@
       "evidence": [],
       "blockers": []
     }
-  ]
+  ],
+  "contract_revision": "P1 rev 0.1.0 (docs/architecture/decisions/0001-technical-defaults.md)"
 }

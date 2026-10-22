@@ -1,6 +1,6 @@
 # Proposed architecture
 
-Status: proposed design, not implemented. Phase 0 freezes decisions before code.
+Status: proposed design, not implemented. Phase 0 technical defaults and the P1 contract are in [ADR 0001](decisions/0001-technical-defaults.md).
 
 ## System
 
@@ -18,7 +18,7 @@ flowchart LR
   S --> F[Media storage]
 ```
 
-Next.js renders routes and interaction. Django alone enforces commercial rules. A same-origin gateway/reverse proxy routes API traffic to Django; Next.js server fetches forward only the necessary authenticated context and never cache private data across users. Session cookies are HttpOnly and secure in production; validate CSRF on unsafe requests, including login. Final proxy/cookie details belong to P1.
+Next.js renders routes and interaction. Django alone enforces commercial rules. A same-origin gateway/reverse proxy routes API traffic to Django; Next.js server fetches forward only the necessary authenticated context and never cache private data across users. Session cookies are HttpOnly and secure in production; validate CSRF on unsafe requests, including login. Proxy, cookie, cache and admin-exposure rules are frozen in ADR 0001: a Compose reverse proxy routes only `/api/v1/*` to a fixed Django upstream, Django admin is not routed, and any server fetch carrying a cookie is uncached.
 
 One Postgres database supports the modular monolith. Start with deterministic exact/full-text/trigram search; add pgvector only after measured recall needs and compatibility filters are preserved. Introduce Celery/Redis only for actual background workloads. Initial local imports may be explicit management commands. Reservation expiry correctness cannot depend solely on a periodic worker.
 
@@ -30,6 +30,7 @@ The application's AI uses one adapter and narrow tools. Claude Code specialists 
 apps/
   api/
     config/                  # Django settings, URLs, ASGI/WSGI
+    common/                  # error envelope, request_id, pagination (P1)
     accounts/                # users and roles
     organizations/           # organization, branch, memberships
     catalog/                 # product, variant, attributes and provenance
@@ -39,7 +40,7 @@ apps/
     sales/                   # operational orders and complete fulfillment
     ingestion/               # staging, normalization and reports
     ai/                      # provider adapter, tools, policy, evaluations
-    audit/                   # append-only business event services
+    audit/                   # append-only business event services (created when first events are written)
     tests/
   web/
     src/app/                 # routes and layouts
@@ -51,7 +52,7 @@ packages/
 contracts/
   openapi.yaml               # exported from DRF after implementation
 tests/
-  e2e/
+  e2e/                       # own npm workspace with Playwright config
   fixtures/                  # explicit synthetic records only
 infra/
   local/                     # local runtime support
@@ -82,7 +83,7 @@ All business entities carry organization ownership directly or through enforced 
 
 | Proposed route | Audience / behavior | Phase |
 | --- | --- | --- |
-| /, /catalog, /catalog/[sku] | Published catalog and branch selector | P1/P2 |
+| /, /catalog, /catalog/[sku] | Published catalog (branch selector arrives with availability in P3) | P1/P2 |
 | /login, /account | Session and own profile | P1 |
 | /quotes, /quotes/[id] | Customer's own quotations | P3 |
 | /staff/catalog, /staff/quotes | Sales workspace | P3 |
